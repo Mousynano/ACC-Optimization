@@ -1,51 +1,56 @@
-import math
 import numpy as np
-from core.utils import sin_angle, cos_angle
+from math import sin, cos
 
-# ====================== PHYSICS (Rajamani, Izci, Ekinci, etc.) ======================
 class VehiclePhysics:
-    def __init__(self, M=1741, Da=0.6, Croll=0.06, g=9.81, theta=0.0):
+    def __init__(self, 
+                 M=1741,                # vehicle mass (kg)
+                 Cd=0.36,               # aerodynamic drag coefficient
+                 A=2.42,                # frontal area (m^2)
+                 rho=1.225,             # air density 20°C
+                 Croll=0.015,           # rolling resistance coefficient
+                 g=9.81, 
+                 theta=0.0):            # slope angle in degrees
+
         self.M = M
-        self.Da = Da
+        self.Cd = Cd
+        self.A = A
+        self.rho = rho
         self.Croll = Croll
         self.g = g
-        self.theta = theta
+        self.theta = np.radians(theta)  # convert deg → rad
 
+    # ======== Forces ========
     def aerodynamic_drag(self, v):
-        # linearized drag: F_a = Da * v
-        return self.Da * v
+        return 0.5 * self.rho * self.Cd * self.A * v**2
 
     def rolling_resistance(self):
-        # F_rr = Croll * M * g
-        return self.Croll * self.M * self.g * cos_angle(self.theta)
+        return self.Croll * self.M * self.g * cos(self.theta)
 
     def gravitational_force(self):
-        # F_g = M * g * sin(theta)
-        return self.M * self.g * sin_angle(self.theta)
+        return self.M * self.g * sin(self.theta)
 
+    # ======== Integration Step ========
     def step(self, v, u, dt):
         """
-        u = acceleration command from PID (unit: m/s^2)
-        Assumption: Fd / M = u  →   Fd = u * M
+        u = accelerator command (interpreted as engine force ratio 0–1)
+        F_t = traction force = u * F_max (assumed ~4000–6000 N)
         """
-        
-        Fd = u * self.M
+
+        Fmax = 6000  # approximated max traction from typical ICE mid-size car
+        Ft = np.clip(u, -1, 1) * Fmax
+
         Fa = self.aerodynamic_drag(v)
         Frr = self.rolling_resistance()
-        Fg = self.gravitational_force()
-        Ftot = Fd - (Fa + Frr + Fg)
-        # print(f"Debug: Fd={Fd}, Fa={Fa}, Frr={Frr}, Fg={Fg}, Ftot={Ftot}, u={u}, v={v}, dt={dt}, M={self.M}")
+        Fg  = self.gravitational_force()
 
-        # Newton: M dv/dt = Fd - (Fa + Frr + Fg)
-        dv = Ftot / self.M
+        # total opposing forces
+        F_resist = Fa + Frr + Fg
 
-        dv = max(-3.0, min(dv, 2.0)) # constraint: perubahan kecepatan maksimal ±5 m/s²
+        # dv/dt = (Ft – F_resist) / M
+        dv = (Ft - F_resist) / self.M
 
+        # velocity integration
         v_new = v + dv * dt
+        v_new = max(v_new, 0)  # no backward movement
 
-        # constraint: ACC tidak mengizinkan mundur
-        if v_new < 0.0:
-            v_new = 0.0
-            dv = 0.0
-
-        return v_new, dv, Fd
+        return v_new, dv, Ft

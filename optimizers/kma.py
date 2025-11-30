@@ -46,7 +46,8 @@ class KomodoMlipirAlgorithm:
         parthenogenesis_radius: float = 0.1,
         stop_criteria: float = 0.01,
         stop: bool = False,
-        obj_function: str = "iae"
+        obj_function: str = "iae",
+        maximize: bool = False,
     ):
         """Inisialisasi parameter algoritma KMA."""
         self._validate_parameters(
@@ -66,6 +67,7 @@ class KomodoMlipirAlgorithm:
         self.stop_criteria = stop_criteria
         self.stop = stop
         self.obj_function = obj_function
+        self.maximize = maximize
         
         # Initialize random number generators
         # np.random.seed(self.random_state)
@@ -164,7 +166,7 @@ class KomodoMlipirAlgorithm:
         Returns:
             Tuple populasi dan fitness yang telah diurutkan
         """
-        sort_indices = np.argsort(fitness_values)[::-1]
+        sort_indices = np.argsort(fitness_values)[::-1] if self.maximize else np.argsort(fitness_values)
         return population[sort_indices], fitness_values[sort_indices]
     
     def _divide_population(
@@ -238,7 +240,9 @@ class KomodoMlipirAlgorithm:
         r1 = self.rng.standard_normal()
         r2 = self.rng.standard_normal()
         
-        if fitness_j < fitness_i or r2 < 0.5:
+        better = fitness_j > fitness_i if self.maximize else fitness_j < fitness_i
+
+        if better or r2 < 0.5:
             return r1 * (male_j - male_i)
         else:
             return r1 * (male_i - male_j)
@@ -302,7 +306,7 @@ class KomodoMlipirAlgorithm:
         fitness1 = self.fitness_function(offspring1, self.obj_function)
         fitness2 = self.fitness_function(offspring2, self.obj_function)
         
-        if fitness2 >= fitness1:
+        if (fitness2 >= fitness1 and self.maximize) or (fitness1 >= fitness2 and not self.maximize):
             return np.array([offspring2]), np.array([fitness2])
         else:
             return np.array([offspring1]), np.array([fitness1])
@@ -521,10 +525,10 @@ class KomodoMlipirAlgorithm:
 
     def _update_best_solution(self) -> None:
         """Update solusi terbaik yang ditemukan."""
-        current_best_idx = np.argmax(self.fitness_values)
+        current_best_idx = np.argmax(self.fitness_values) if self.maximize else np.argmin(self.fitness_values)
         current_best_fitness = self.fitness_values[current_best_idx]
         
-        if self.best_fitness is None or current_best_fitness > self.best_fitness:
+        if self.best_fitness is None or (self.maximize and current_best_fitness > self.best_fitness) or ((not self.maximize) and current_best_fitness < self.best_fitness):
             self.best_fitness = current_best_fitness
             self.best_solution = self.population[current_best_idx].copy()
         
@@ -584,6 +588,7 @@ def run_kma(func, min_params, max_params, population_size, max_iter=100, verbose
         fitness_function=func,
         search_space=search_space,
         max_iterations=max_iter,
+        maximize=False,
     )
 
     ise_model = KMA(
@@ -594,6 +599,7 @@ def run_kma(func, min_params, max_params, population_size, max_iter=100, verbose
         fitness_function=func,
         search_space=search_space,
         max_iterations=max_iter,
+        maximize=False,
     )
 
     itae_model = KMA(
@@ -604,6 +610,7 @@ def run_kma(func, min_params, max_params, population_size, max_iter=100, verbose
         fitness_function=func,
         search_space=search_space,
         max_iterations=max_iter,
+        maximize=False,
     )
 
     itse_model = KMA(
@@ -614,6 +621,7 @@ def run_kma(func, min_params, max_params, population_size, max_iter=100, verbose
         fitness_function=func,
         search_space=search_space,
         max_iterations=max_iter,
+        maximize=False,
     )
 
     iae_model.fit(verbose=verbose)

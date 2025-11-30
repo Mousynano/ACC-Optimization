@@ -97,7 +97,7 @@ def run_ga(func, min_params, max_params, population_size, max_iter=100, verbose=
         max_iter=max_iter,
         mutation_rate=0.3,
         crossover_rate=0.7,
-        maximize=True
+        maximize=False
     )
 
     ise_model = GeneticAlgorithm(
@@ -109,7 +109,7 @@ def run_ga(func, min_params, max_params, population_size, max_iter=100, verbose=
         max_iter=max_iter,
         mutation_rate=0.3,
         crossover_rate=0.7,
-        maximize=True
+        maximize=False
     )
     itae_model = GeneticAlgorithm(
         obj_function="itae",
@@ -120,7 +120,7 @@ def run_ga(func, min_params, max_params, population_size, max_iter=100, verbose=
         max_iter=max_iter,
         mutation_rate=0.3,
         crossover_rate=0.7,
-        maximize=True
+        maximize=False
     )
     itse_model = GeneticAlgorithm(
         obj_function="itse",
@@ -131,7 +131,7 @@ def run_ga(func, min_params, max_params, population_size, max_iter=100, verbose=
         max_iter=max_iter,
         mutation_rate=0.3,
         crossover_rate=0.7,
-        maximize=True
+        maximize=False
     )
 
     iae_best_params, iae_best_fitness = iae_model.run(verbose=verbose)

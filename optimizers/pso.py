@@ -27,7 +27,7 @@ class Particle:
         )
 
 class ParticleSwarmOptimization:
-    def __init__(self, fitness_function, obj_function, min_params, max_params,
+    def __init__(self, fitness_function, obj_function, min_params, max_params, maximize=False,
                  n_particles=30, max_iteration=100,
                  w=0.7, c1=1.4, c2=1.2, tolerance=1e-6):
         self.fitness_function = fitness_function
@@ -42,6 +42,7 @@ class ParticleSwarmOptimization:
         self.c1 = c1
         self.c2 = c2
         self.tolerance = tolerance
+        self.maximize = maximize
 
         # === Tracking History ===
         self.history = {
@@ -50,14 +51,20 @@ class ParticleSwarmOptimization:
         }
 
     def _evaluate_particles(self):
-        for particle in self.particles:
-            value = self.fitness_function(particle.position, self.obj_function)
-            if value > particle.best_value:
-                particle.best_value = value
-                particle.best_position = particle.position.copy()
-            if value > self.best_value:
+        for p in self.particles:
+            value = self.fitness_function(p.position, self.obj_function)
+
+            # update personal best
+            if (self.maximize and value > p.best_value) or \
+               ((not self.maximize) and value < p.best_value):
+                p.best_value = value
+                p.best_position = p.position.copy()
+
+            # update global best
+            if (self.maximize and value > self.best_value) or \
+               ((not self.maximize) and value < self.best_value):
                 self.best_value = value
-                self.best_position = particle.position.copy()
+                self.best_position = p.position.copy()
 
     def _move_particles(self):
         for particle in self.particles:

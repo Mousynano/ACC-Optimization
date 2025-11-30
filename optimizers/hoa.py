@@ -108,7 +108,7 @@ def run_hoa(func, min_params, max_params, population_size, max_iter=100, verbose
         max_params=max_params,
         hikers=population_size,
         max_iter=max_iter,
-        maximize=True,
+        maximize=False,
     )
 
     ise_model = HikingOptimizationAlgorithm(
@@ -118,7 +118,7 @@ def run_hoa(func, min_params, max_params, population_size, max_iter=100, verbose
         max_params=max_params,
         hikers=population_size,
         max_iter=max_iter,
-        maximize=True,
+        maximize=False,
     )
 
     itae_model = HikingOptimizationAlgorithm(
@@ -128,7 +128,7 @@ def run_hoa(func, min_params, max_params, population_size, max_iter=100, verbose
         max_params=max_params,
         hikers=population_size,
         max_iter=max_iter,
-        maximize=True,
+        maximize=False,
     )
 
     itse_model = HikingOptimizationAlgorithm(
@@ -138,7 +138,7 @@ def run_hoa(func, min_params, max_params, population_size, max_iter=100, verbose
         max_params=max_params,
         hikers=population_size,
         max_iter=max_iter,
-        maximize=True,
+        maximize=False,
     )
 
     iae_best_params, iae_best_fitness = iae_model.run(verbose=verbose)
