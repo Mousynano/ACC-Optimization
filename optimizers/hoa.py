@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 class HikingOptimizationAlgorithm:
     def __init__(self, fitness_function, min_params, max_params,
-                 hikers=30, max_iter=100, maximize=True):  # default: maximize
+                 hikers=30, max_iter=100, maximize=True, progress_callback=None):  # default: maximize
         self.fitness_function = fitness_function
         self.min_params = np.array(min_params)
         self.max_params = np.array(max_params)
@@ -16,6 +16,8 @@ class HikingOptimizationAlgorithm:
 
         # History tracking
         self.history = {"best_fitness": [], "best_position": []}
+
+        self.progress_callback = progress_callback
 
     # Tobler’s Hiking Function (Eq. 1)
     def toblers_velocity(self, slope):
@@ -35,7 +37,7 @@ class HikingOptimizationAlgorithm:
     def evaluate(self, pos):
         return self.fitness_function(pos)
 
-    def run(self, verbose=True, progress_callback=None):
+    def run(self, verbose=True):
         beta = self.initialize_positions()
         fitness = np.array([self.evaluate(b) for b in beta])
 
@@ -87,8 +89,8 @@ class HikingOptimizationAlgorithm:
             self.history["best_position"].append(beta_best.copy())
             iterator.set_postfix({"Best": f"{f_best:.6f}"})
 
-            if progress_callback is not None:
-                progress_callback(t + 1)
+            if self.progress_callback is not None:
+                self.progress_callback(t + 1)
 
         return beta_best, f_best
 
@@ -108,13 +110,11 @@ def run_hoa(
         hikers=population_size,
         max_iter=max_iter,
         maximize=False,
+        progress_callback=progress_callback
     )
 
     best_params, best_fitness = model.run(
         verbose=verbose,
-        progress_callback=progress_callback
     )
 
-    curve = model.history["best_fitness"]
-
-    return best_params, best_fitness, curve
+    return best_params, best_fitness, model.history["best_fitness"]

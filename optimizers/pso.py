@@ -29,7 +29,7 @@ class Particle:
 class ParticleSwarmOptimization:
     def __init__(self, fitness_function, min_params, max_params, maximize=False,
                  n_particles=30, max_iteration=100,
-                 w=0.7, c1=1.4, c2=1.2, tolerance=1e-6):
+                 w=0.7, c1=1.4, c2=1.2, tolerance=1e-6, progress_callback=None):
         self.fitness_function = fitness_function
         self.n_particles = n_particles
         self.max_iteration = max_iteration
@@ -48,6 +48,8 @@ class ParticleSwarmOptimization:
             "best_fitness": [],
             "best_position": [],
         }
+
+        self.progress_callback = progress_callback
 
     def _evaluate_particles(self):
         for p in self.particles:
@@ -82,7 +84,7 @@ class ParticleSwarmOptimization:
         self._evaluate_particles()
         self._save_history()
 
-    def run(self, verbose=True, progress_callback=None):
+    def run(self, verbose=True):
         # Inisialisasi progress bar
         iterator = tqdm(
             range(self.max_iteration),
@@ -98,8 +100,8 @@ class ParticleSwarmOptimization:
             iterator.set_postfix({"Best": f"{self.best_value:.6f}, Pos: {np.round(self.best_position, 4)}"})
 
             # Update progress bar
-            if progress_callback is not None:
-                progress_callback(iteration + 1)
+            if self.progress_callback is not None:
+                self.progress_callback(iteration + 1)
 
             # Kriteria berhenti opsional
             if abs(self.best_value) < self.tolerance:
@@ -123,15 +125,12 @@ def run_pso(
         max_params=max_params,
         n_particles=population_size,
         max_iteration=max_iter,
-        maximize=False
+        maximize=False,
+        progress_callback=progress_callback
     )
 
     best_params, best_fitness = model.run(
         verbose=verbose,
-        progress_callback=progress_callback
     )
 
-    curve = model.history["best_fitness"]
-
-    return best_params, best_fitness, curve
-
+    return best_params, best_fitness, model.history["best_fitness"]

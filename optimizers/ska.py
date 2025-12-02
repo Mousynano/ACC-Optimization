@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 class StochasticKomodoAlgorithm:
     def __init__(self, fitness_function, min_params, max_params,
                  pop_size=30, max_iter=100, g1=0.35, g2=0.7,
-                 w1=0.5, w2=0.5, rs=0.01, nC=5, maximize=True):
+                 w1=0.5, w2=0.5, rs=0.01, nC=5, maximize=True, progress_callback=None):
         self.fitness_function = fitness_function
         self.min_params = np.array(min_params)
         self.max_params = np.array(max_params)
@@ -27,6 +27,8 @@ class StochasticKomodoAlgorithm:
             "best_fitness": [],
             "best_position": []
         }
+
+        self.progress_callback = progress_callback
 
     # Inisialisasi populasi awal
     def initialize(self):
@@ -73,7 +75,7 @@ class StochasticKomodoAlgorithm:
         return np.clip(new_k, self.min_params, self.max_params)
 
     # Jalankan algoritma utama
-    def run(self, verbose=True, progress_callback=None):
+    def run(self, verbose=True):
         K = self.initialize()
         f_values = np.array([self.evaluate(k) for k in K])
         best_idx = np.argmax(f_values) if self.maximize else np.argmin(f_values)
@@ -117,8 +119,8 @@ class StochasticKomodoAlgorithm:
             self.history["best_fitness"].append(best_value)
             self.history["best_position"].append(k_best.copy())
 
-            if progress_callback is not None:
-                progress_callback(t + 1)
+            if self.progress_callback is not None:
+                self.progress_callback(t + 1)
 
             iterator.set_postfix({"Best": f"{best_value:.6f}"})
 
@@ -140,13 +142,11 @@ def run_ska(
         pop_size=population_size,
         max_iter=max_iter,
         maximize=False,
+        progress_callback=progress_callback
     )
 
     best_params, best_fitness = model.run(
         verbose=verbose,
-        progress_callback=progress_callback
     )
 
-    curve = model.history["best_fitness"]
-
-    return best_params, best_fitness, curve
+    return best_params, best_fitness, model.history["best_fitness"]

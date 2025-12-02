@@ -72,6 +72,25 @@ def find_overshoot(error):
         overshoot = 0
     return overshoot
 
+
+SCENARIOS = [
+    {"theta_angle": 0,  "vehicle_mass": 1500, "rolling_resistance": 0.06},
+    {"theta_angle": 0,  "vehicle_mass": 1500*1.1, "rolling_resistance": 0.06},
+    {"theta_angle": 0,  "vehicle_mass": 1500*0.9, "rolling_resistance": 0.06},
+    {"theta_angle": 0,  "vehicle_mass": 1500, "rolling_resistance": 0.06*1.2},
+
+    {"theta_angle": 10, "vehicle_mass": 1500, "rolling_resistance": 0.06},
+    {"theta_angle": 10, "vehicle_mass": 1500*1.1, "rolling_resistance": 0.06},
+    {"theta_angle": 10, "vehicle_mass": 1500*0.9, "rolling_resistance": 0.06},
+    {"theta_angle": 10, "vehicle_mass": 1500, "rolling_resistance": 0.06*1.2},
+
+    {"theta_angle": -10, "vehicle_mass": 1500, "rolling_resistance": 0.06},
+    {"theta_angle": -10, "vehicle_mass": 1500*1.1, "rolling_resistance": 0.06},
+    {"theta_angle": -10, "vehicle_mass": 1500*0.9, "rolling_resistance": 0.06},
+    {"theta_angle": -10, "vehicle_mass": 1500, "rolling_resistance": 0.06*1.2},
+]
+
+
 def lean_simulate_system(params, obj_function, return_history=False, 
                          sim_time=60, theta_angle=0, vehicle_mass=1500, 
                          rolling_resistance=0.06):
@@ -141,52 +160,27 @@ def lean_simulate_system(params, obj_function, return_history=False,
 
     return [obj_val, history] if return_history else obj_val
 
+from concurrent.futures import ThreadPoolExecutor
+
+def acc_single_scenario(params, obj_function, scenario):
+    return lean_simulate_system(
+        params,
+        obj_function,
+        theta_angle=scenario["theta_angle"],
+        vehicle_mass=scenario["vehicle_mass"],
+        rolling_resistance=scenario["rolling_resistance"]
+    )
 
 def acc_fitness_func(params, obj_function):
-    obj = 0
+    # THREAD POOL: sangat ringan overheadnya
+    with ThreadPoolExecutor(max_workers=12) as pool:
+        futures = [
+            pool.submit(acc_single_scenario, params, obj_function, scen)
+            for scen in SCENARIOS
+        ]
 
-    # Normal 
-    # Normal
-    obj += lean_simulate_system(params, obj_function)
-
-    # # Mass +10%
-    # obj += lean_simulate_system(params, obj_function, vehicle_mass=1500+(1/10*1500))
-
-    # # Mass -10%
-    # obj += lean_simulate_system(params, obj_function, vehicle_mass=1500-(1/10*1500))
-
-    # # Rolling resistance +20%
-    # obj += lean_simulate_system(params, obj_function, rolling_resistance=0.06+(1/5*0.06))
-    
-
-    # # Sloped +10 degrees
-    # # Normal 
-    # obj += lean_simulate_system(params, obj_function, theta_angle=10)
-
-    # # Mass +10%
-    # obj += lean_simulate_system(params, obj_function, theta_angle=10, vehicle_mass=1500+(1/10*1500))
-
-    # # Mass -10%
-    # obj += lean_simulate_system(params, obj_function, theta_angle=10, vehicle_mass=1500-(1/10*1500))
-
-    # # Rolling resistance +20%
-    # obj += lean_simulate_system(params, obj_function, theta_angle=10, rolling_resistance=0.06+(1/5*0.06))
-
-
-    # # Sloped -10 degrees
-    # # Normal
-    # obj += lean_simulate_system(params, obj_function, theta_angle=-10)
-
-    # # Mass +10%
-    # obj += lean_simulate_system(params, obj_function, theta_angle=-10, vehicle_mass=1500+(1/10*1500))
-
-    # # Mass -10%
-    # obj += lean_simulate_system(params, obj_function, theta_angle=-10, vehicle_mass=1500-(1/10*1500))
-
-    # # Rolling resistance +20%
-    # obj += lean_simulate_system(params, obj_function, theta_angle=-10, rolling_resistance=0.06+(1/5*0.06))
-
-    return obj
+        # kembalikan jumlah total objective dari 12 kondisi
+        return sum(f.result() for f in futures)
 
 BENCHMARKS_ACC = {
     "acc": acc_fitness_func,

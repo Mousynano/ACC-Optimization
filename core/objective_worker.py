@@ -14,7 +14,11 @@ def objective_worker(
 
     # Callback → update ONE objective bar
     def cb(step):
-        sub_progress[algo_name][obj_name] = step
+        row = sub_progress[algo_name]  # old row
+        new_row = row.copy()
+        new_row[obj_name] = step
+        sub_progress[algo_name] = new_row  # reassign → this forces sync
+
 
     # Wrap the fitness function to embed objective
     def fitness_wrapper(params):
@@ -27,7 +31,7 @@ def objective_worker(
         max_params=max_params,
         population_size=population_size,
         max_iter=max_iter,
-        verbose=False,
+        verbose=True,
         progress_callback=cb         # <─ key line
     )
 

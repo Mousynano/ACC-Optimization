@@ -47,6 +47,7 @@ class KomodoMlipirAlgorithm:
         stop_criteria: float = 0.01,
         stop: bool = False,
         maximize: bool = False,
+        progress_callback: Optional[Callable] = None
     ):
         """Inisialisasi parameter algoritma KMA."""
         self._validate_parameters(
@@ -79,6 +80,8 @@ class KomodoMlipirAlgorithm:
         self.history = {"best_fitness": [], "best_solution": []}
         self.best_fitness = None
         self.best_solution = None
+
+        self.progress_callback = progress_callback
         
     def _validate_parameters(
         self,
@@ -444,7 +447,6 @@ class KomodoMlipirAlgorithm:
         min_population: int = 20,
         max_population: int = 100,
         verbose: bool = True,
-        progress_callback: Optional[Callable] = None
     ) -> None:
         """
         Jalankan proses optimasi.
@@ -508,8 +510,8 @@ class KomodoMlipirAlgorithm:
             iterator.set_postfix({"Best": f"{self.best_fitness:.6f}"})
 
             # Update progress bar display
-            if progress_callback is not None:
-                progress_callback(iteration + 1)
+            if self.progress_callback is not None:
+                self.progress_callback(iteration + 1)
 
             # Adaptive schema opsional
             if adaptive_schema:
@@ -590,12 +592,12 @@ def run_kma(func, min_params, max_params, population_size, max_iter=100, verbose
         search_space=search_space,
         max_iterations=max_iter,
         maximize=False,
+        progress_callback=progress_callback
     )
 
     model.fit(
         adaptive_schema=False,
         verbose=verbose,
-        progress_callback=progress_callback,
     )
 
     return (

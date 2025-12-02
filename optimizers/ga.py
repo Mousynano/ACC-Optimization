@@ -5,7 +5,7 @@ from core.utils import lerp
 
 class GeneticAlgorithm:
     def __init__(self, fitness_function, min_params, max_params,
-                 population_size=30, max_iter=100, mutation_rate=0.4, crossover_rate=0.7, maximize=True):  # default: maximize
+                 population_size=30, max_iter=100, mutation_rate=0.4, crossover_rate=0.7, maximize=True, progress_callback=None):  # default: maximize
         self.fitness_function = fitness_function
         self.min_params = np.array(min_params)
         self.max_params = np.array(max_params)
@@ -20,6 +20,7 @@ class GeneticAlgorithm:
 
         # History tracking
         self.history = {"best_fitness": [], "best_position": []}
+        self.progress_callback = progress_callback
 
     def __crossover(self, parent1, parent2):
         rand1, rand2 = uniform(0, 1), uniform(0, 1)
@@ -96,8 +97,8 @@ class GeneticAlgorithm:
             self.history["best_position"].append(best_params.copy())
 
             # Progress callback
-            if progress_callback is not None:
-                progress_callback(t + 1)
+            if self.progress_callback is not None:
+                self.progress_callback(t + 1)
 
         return best_params, best_fit
 
@@ -109,12 +110,12 @@ def run_ga(func, min_params, max_params, population_size, max_iter=100, verbose=
         max_params=max_params,
         population_size=population_size,
         max_iter=max_iter,
-        maximize=False
+        maximize=False,
+        progress_callback=progress_callback
     )
 
     best_params, best_fit = model.run(
         verbose=verbose,
-        progress_callback=progress_callback
     )
 
     return (
