@@ -4,10 +4,9 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 class HikingOptimizationAlgorithm:
-    def __init__(self, fitness_function, obj_function, min_params, max_params,
+    def __init__(self, fitness_function, min_params, max_params,
                  hikers=30, max_iter=100, maximize=True):  # default: maximize
         self.fitness_function = fitness_function
-        self.obj_function = obj_function
         self.min_params = np.array(min_params)
         self.max_params = np.array(max_params)
         self.dim = len(min_params)
@@ -34,9 +33,9 @@ class HikingOptimizationAlgorithm:
         ])
 
     def evaluate(self, pos):
-        return self.fitness_function(pos, self.obj_function)
+        return self.fitness_function(pos)
 
-    def run(self, verbose=True):
+    def run(self, verbose=True, progress_callback=None):
         beta = self.initialize_positions()
         fitness = np.array([self.evaluate(b) for b in beta])
 
@@ -88,21 +87,21 @@ class HikingOptimizationAlgorithm:
             self.history["best_position"].append(beta_best.copy())
             iterator.set_postfix({"Best": f"{f_best:.6f}"})
 
+            if progress_callback is not None:
+                progress_callback(t + 1)
+
         return beta_best, f_best
 
-# === Example: Test HOA on Rastrigin Function ===
-def rastrigin(x):
-    A = 10
-    value = A * len(x) + np.sum(x ** 2 - A * np.cos(2 * np.pi * x))
-    return -value  # balik supaya semakin besar fitness, semakin baik
-
-def run_hoa(func, min_params, max_params, population_size, max_iter=100, verbose=False):
-    """
-    Runner for Hiking Optimization Algorithm (HOA)
-    """
-
-    iae_model = HikingOptimizationAlgorithm(
-        obj_function="iae",
+def run_hoa(
+    func,
+    min_params,
+    max_params,
+    population_size,
+    max_iter=100,
+    verbose=False,
+    progress_callback=None
+):
+    model = HikingOptimizationAlgorithm(
         fitness_function=func,
         min_params=min_params,
         max_params=max_params,
@@ -111,58 +110,11 @@ def run_hoa(func, min_params, max_params, population_size, max_iter=100, verbose
         maximize=False,
     )
 
-    ise_model = HikingOptimizationAlgorithm(
-        obj_function="ise",
-        fitness_function=func,
-        min_params=min_params,
-        max_params=max_params,
-        hikers=population_size,
-        max_iter=max_iter,
-        maximize=False,
+    best_params, best_fitness = model.run(
+        verbose=verbose,
+        progress_callback=progress_callback
     )
 
-    itae_model = HikingOptimizationAlgorithm(
-        obj_function="itae",
-        fitness_function=func,
-        min_params=min_params,
-        max_params=max_params,
-        hikers=population_size,
-        max_iter=max_iter,
-        maximize=False,
-    )
-
-    itse_model = HikingOptimizationAlgorithm(
-        obj_function="itse",
-        fitness_function=func,
-        min_params=min_params,
-        max_params=max_params,
-        hikers=population_size,
-        max_iter=max_iter,
-        maximize=False,
-    )
-
-    iae_best_params, iae_best_fitness = iae_model.run(verbose=verbose)
-    ise_best_params, ise_best_fitness = ise_model.run(verbose=verbose)
-    itae_best_params, itae_best_fitness = itae_model.run(verbose=verbose)
-    itse_best_params, itse_best_fitness = itse_model.run(verbose=verbose)
-
-    best_params = {
-        "iae": iae_best_params, 
-        "ise": ise_best_params, 
-        "itae": itae_best_params, 
-        "itse": itse_best_params
-    }
-    best_fitness = {
-        "iae": iae_best_fitness, 
-        "ise": ise_best_fitness, 
-        "itae": itae_best_fitness, 
-        "itse": itse_best_fitness
-    }
-    curve = {
-        "iae": iae_model.history.get("best_fitness", []),
-        "ise": ise_model.history.get("best_fitness", []),
-        "itae": itae_model.history.get("best_fitness", []),
-        "itse": itse_model.history.get("best_fitness", []),
-    }
+    curve = model.history["best_fitness"]
 
     return best_params, best_fitness, curve

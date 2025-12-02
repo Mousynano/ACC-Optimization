@@ -1,4 +1,4 @@
-from core.utils import iae, ise, itae, itse, sin_angle
+from core.utils import sin_angle
 from core.physics import VehiclePhysics
 
 def update_step_response_data(error, car):
@@ -75,6 +75,10 @@ def find_overshoot(error):
 def lean_simulate_system(params, obj_function, return_history=False, 
                          sim_time=60, theta_angle=0, vehicle_mass=1500, 
                          rolling_resistance=0.06):
+    """
+    obj_function is now a FUNCTION, not a string.
+    It must accept (err, time) or (err) depending on the metric.
+    """
     physics = VehiclePhysics(theta=theta_angle, M=vehicle_mass, Croll=rolling_resistance)
 
     verr_gain, vx_gain, xerr_gain = params
@@ -84,60 +88,47 @@ def lean_simulate_system(params, obj_function, return_history=False,
     xlead, vlead, alead = 60, 22, 0
     ddef, Tg = 20, 1.2
     Ts = 1 / 60
-    obj_func = 0
+    obj_val = 0
     simulation_steps = int(sim_time / Ts)
 
-    # History logs
     history = {
-        "time": [],
-        "v_ego": [],
-        "v_lead": [],
-        "x_ego": [],
-        "x_lead": [],
-        "car_force": [],
-        "dist": [],
-        "a_ego": [],
-        "err": [],
-        "mode": [],
+        "time": [], "v_ego": [], "v_lead": [], "x_ego": [], "x_lead": [],
+        "car_force": [], "dist": [], "a_ego": [], "err": [], "mode": []
     }
 
     for i in range(simulation_steps):
-        # Distance calculations
-        dactual = xlead - xego
-        dsafe = (ddef + (Tg * vego))
+        t = i * Ts
 
-        # error longitudinal dan kecepatan
-        derr = dsafe - dactual
-        verr = vset - vego
+        # Compute errors
+        dactual = xlead - xego
+        dsafe   = ddef + Tg * vego
+        derr    = dsafe - dactual
+        verr    = vset - vego
+        err     = derr + verr
 
         # Controller
         u_v = verr_gain * verr
         u_x = (vlead - vego) * vx_gain + xerr_gain * (dsafe - dactual)
         u = min(u_v, u_x)
 
-        err = derr + verr
-        
-        # fungsi objektif
-        if obj_function == 'iae':
-            obj_func += iae(err)
-        elif obj_function == 'ise':
-            obj_func += ise(err)
-        elif obj_function == 'itae':
-            obj_func += itae(err, i * Ts)
-        elif obj_function == 'itse':
-            obj_func += itse(err, i * Ts)
+        # OBJECTIVE FUNCTION: direct call
+        try:
+            obj_val += obj_function(err, t)   # ITAE / ITSE require time
+        except TypeError:
+            obj_val += obj_function(err)      # IAE / ISE have no time param
 
-        # update ego car
+        # Update ego car
         vego, aego, Fd = physics.step(vego, u, Ts)
         xego += vego * Ts
 
-        # update lead car
+        # Update lead car
         theta = (theta + 30 * Ts) % 360
         alead = sin_angle(theta)
         vlead += alead * Ts
         xlead += vlead * Ts
+
         if return_history:
-            history["time"].append(i * Ts)
+            history["time"].append(t)
             history["v_ego"].append(vego)
             history["v_lead"].append(vlead)
             history["x_ego"].append(xego)
@@ -148,7 +139,8 @@ def lean_simulate_system(params, obj_function, return_history=False,
             history["err"].append(err)
             history["mode"].append("N/A")
 
-    return [obj_func, history] if return_history else obj_func
+    return [obj_val, history] if return_history else obj_val
+
 
 def acc_fitness_func(params, obj_function):
     obj = 0
@@ -157,42 +149,42 @@ def acc_fitness_func(params, obj_function):
     # Normal
     obj += lean_simulate_system(params, obj_function)
 
-    # Mass +10%
-    obj += lean_simulate_system(params, obj_function, vehicle_mass=1500+(1/10*1500))
+    # # Mass +10%
+    # obj += lean_simulate_system(params, obj_function, vehicle_mass=1500+(1/10*1500))
 
-    # Mass -10%
-    obj += lean_simulate_system(params, obj_function, vehicle_mass=1500-(1/10*1500))
+    # # Mass -10%
+    # obj += lean_simulate_system(params, obj_function, vehicle_mass=1500-(1/10*1500))
 
-    # Rolling resistance +20%
-    obj += lean_simulate_system(params, obj_function, rolling_resistance=0.06+(1/5*0.06))
+    # # Rolling resistance +20%
+    # obj += lean_simulate_system(params, obj_function, rolling_resistance=0.06+(1/5*0.06))
     
 
-    # Sloped +10 degrees
-    # Normal 
-    obj += lean_simulate_system(params, obj_function, theta_angle=10)
+    # # Sloped +10 degrees
+    # # Normal 
+    # obj += lean_simulate_system(params, obj_function, theta_angle=10)
 
-    # Mass +10%
-    obj += lean_simulate_system(params, obj_function, theta_angle=10, vehicle_mass=1500+(1/10*1500))
+    # # Mass +10%
+    # obj += lean_simulate_system(params, obj_function, theta_angle=10, vehicle_mass=1500+(1/10*1500))
 
-    # Mass -10%
-    obj += lean_simulate_system(params, obj_function, theta_angle=10, vehicle_mass=1500-(1/10*1500))
+    # # Mass -10%
+    # obj += lean_simulate_system(params, obj_function, theta_angle=10, vehicle_mass=1500-(1/10*1500))
 
-    # Rolling resistance +20%
-    obj += lean_simulate_system(params, obj_function, theta_angle=10, rolling_resistance=0.06+(1/5*0.06))
+    # # Rolling resistance +20%
+    # obj += lean_simulate_system(params, obj_function, theta_angle=10, rolling_resistance=0.06+(1/5*0.06))
 
 
-    # Sloped -10 degrees
-    # Normal
-    obj += lean_simulate_system(params, obj_function, theta_angle=-10)
+    # # Sloped -10 degrees
+    # # Normal
+    # obj += lean_simulate_system(params, obj_function, theta_angle=-10)
 
-    # Mass +10%
-    obj += lean_simulate_system(params, obj_function, theta_angle=-10, vehicle_mass=1500+(1/10*1500))
+    # # Mass +10%
+    # obj += lean_simulate_system(params, obj_function, theta_angle=-10, vehicle_mass=1500+(1/10*1500))
 
-    # Mass -10%
-    obj += lean_simulate_system(params, obj_function, theta_angle=-10, vehicle_mass=1500-(1/10*1500))
+    # # Mass -10%
+    # obj += lean_simulate_system(params, obj_function, theta_angle=-10, vehicle_mass=1500-(1/10*1500))
 
-    # Rolling resistance +20%
-    obj += lean_simulate_system(params, obj_function, theta_angle=-10, rolling_resistance=0.06+(1/5*0.06))
+    # # Rolling resistance +20%
+    # obj += lean_simulate_system(params, obj_function, theta_angle=-10, rolling_resistance=0.06+(1/5*0.06))
 
     return obj
 

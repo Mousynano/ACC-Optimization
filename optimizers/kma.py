@@ -46,7 +46,6 @@ class KomodoMlipirAlgorithm:
         parthenogenesis_radius: float = 0.1,
         stop_criteria: float = 0.01,
         stop: bool = False,
-        obj_function: str = "iae",
         maximize: bool = False,
     ):
         """Inisialisasi parameter algoritma KMA."""
@@ -66,7 +65,6 @@ class KomodoMlipirAlgorithm:
         self.parthenogenesis_radius = parthenogenesis_radius
         self.stop_criteria = stop_criteria
         self.stop = stop
-        self.obj_function = obj_function
         self.maximize = maximize
         
         # Initialize random number generators
@@ -132,7 +130,7 @@ class KomodoMlipirAlgorithm:
             Array nilai fitness
         """
         return np.array([
-            self.fitness_function(individual, self.obj_function) 
+            self.fitness_function(individual) 
             for individual in individuals
         ])
     
@@ -303,8 +301,8 @@ class KomodoMlipirAlgorithm:
         offspring2 = self._clip_to_bounds(offspring2)
         
         # Select best offspring
-        fitness1 = self.fitness_function(offspring1, self.obj_function)
-        fitness2 = self.fitness_function(offspring2, self.obj_function)
+        fitness1 = self.fitness_function(offspring1)
+        fitness2 = self.fitness_function(offspring2)
         
         if (fitness2 >= fitness1 and self.maximize) or (fitness1 >= fitness2 and not self.maximize):
             return np.array([offspring2]), np.array([fitness2])
@@ -328,7 +326,7 @@ class KomodoMlipirAlgorithm:
         offspring = female + (2 * r - 1) * self.parthenogenesis_radius * ranges
         offspring = self._clip_to_bounds(offspring)
         
-        fitness = self.fitness_function(offspring, self.obj_function)
+        fitness = self.fitness_function(offspring)
         
         return np.array([offspring]), np.array([fitness])
     
@@ -445,7 +443,8 @@ class KomodoMlipirAlgorithm:
         adaptive_schema: bool = False,
         min_population: int = 20,
         max_population: int = 100,
-        verbose: bool = True
+        verbose: bool = True,
+        progress_callback: Optional[Callable] = None
     ) -> None:
         """
         Jalankan proses optimasi.
@@ -507,6 +506,10 @@ class KomodoMlipirAlgorithm:
 
             # Update progress bar dengan best fitness saat ini
             iterator.set_postfix({"Best": f"{self.best_fitness:.6f}"})
+
+            # Update progress bar display
+            if progress_callback is not None:
+                progress_callback(iteration + 1)
 
             # Adaptive schema opsional
             if adaptive_schema:
@@ -573,15 +576,13 @@ def build_search_space(min_params, max_params):
 # Aliases and exports
 KMA = KomodoMlipirAlgorithm
 
-def run_kma(func, min_params, max_params, population_size, max_iter=100, verbose=False):
+def run_kma(func, min_params, max_params, population_size, max_iter=100, verbose=False, progress_callback=None):
     """
-    Runner for Komodo Mlipir Algorithm (KMA)
+    Single-objective runner for KMA, used by objective_worker.
     """
     search_space = build_search_space(min_params, max_params)
 
-
-    iae_model = KMA(
-        obj_function="iae",
+    model = KMA(
         population_size=population_size,
         male_proportion=0.4,
         mlipir_rate=0.7,
@@ -591,62 +592,15 @@ def run_kma(func, min_params, max_params, population_size, max_iter=100, verbose
         maximize=False,
     )
 
-    ise_model = KMA(
-        obj_function="ise",
-        population_size=population_size,
-        male_proportion=0.4,
-        mlipir_rate=0.7,
-        fitness_function=func,
-        search_space=search_space,
-        max_iterations=max_iter,
-        maximize=False,
+    model.fit(
+        adaptive_schema=False,
+        verbose=verbose,
+        progress_callback=progress_callback,
     )
 
-    itae_model = KMA(
-        obj_function="itae",
-        population_size=population_size,
-        male_proportion=0.4,
-        mlipir_rate=0.7,
-        fitness_function=func,
-        search_space=search_space,
-        max_iterations=max_iter,
-        maximize=False,
+    return (
+        getattr(model, "best_solution", None),
+        getattr(model, "best_fitness", None),
+        model.history.get("best_fitness", []),
     )
-
-    itse_model = KMA(
-        obj_function="itse",
-        population_size=population_size,
-        male_proportion=0.4,
-        mlipir_rate=0.7,
-        fitness_function=func,
-        search_space=search_space,
-        max_iterations=max_iter,
-        maximize=False,
-    )
-
-    iae_model.fit(verbose=verbose)
-    ise_model.fit(verbose=verbose)
-    itae_model.fit(verbose=verbose)
-    itse_model.fit(verbose=verbose)
-
-    best_params = {
-        "iae": getattr(iae_model, "best_solution", None), 
-        "ise": getattr(ise_model, "best_solution", None), 
-        "itae": getattr(itae_model, "best_solution", None), 
-        "itse": getattr(itse_model, "best_solution", None)
-    }
-    best_fitness = {
-        "iae": getattr(iae_model, "best_fitness", None), 
-        "ise": getattr(ise_model, "best_fitness", None), 
-        "itae": getattr(itae_model, "best_fitness", None), 
-        "itse": getattr(itse_model, "best_fitness", None)
-    }
-    curve = {
-        "iae": iae_model.history.get("best_fitness", []),
-        "ise": ise_model.history.get("best_fitness", []),
-        "itae": itae_model.history.get("best_fitness", []),
-        "itse": itse_model.history.get("best_fitness", []),
-    }
-
-    return best_params, best_fitness, curve
 

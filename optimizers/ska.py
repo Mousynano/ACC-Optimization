@@ -7,11 +7,10 @@ import matplotlib.pyplot as plt
 #  Stochastic Komodo Algorithm (SKA)
 # ===============================
 class StochasticKomodoAlgorithm:
-    def __init__(self, fitness_function, obj_function, min_params, max_params,
+    def __init__(self, fitness_function, min_params, max_params,
                  pop_size=30, max_iter=100, g1=0.35, g2=0.7,
                  w1=0.5, w2=0.5, rs=0.01, nC=5, maximize=True):
         self.fitness_function = fitness_function
-        self.obj_function = obj_function
         self.min_params = np.array(min_params)
         self.max_params = np.array(max_params)
         self.dim = len(min_params)
@@ -39,7 +38,7 @@ class StochasticKomodoAlgorithm:
 
     # Evaluasi fitness
     def evaluate(self, position):
-        return self.fitness_function(position, self.obj_function)
+        return self.fitness_function(position)
 
     # Update solusi terbaik global
     def global_update(self, k, k_best):
@@ -74,7 +73,7 @@ class StochasticKomodoAlgorithm:
         return np.clip(new_k, self.min_params, self.max_params)
 
     # Jalankan algoritma utama
-    def run(self, verbose=True):
+    def run(self, verbose=True, progress_callback=None):
         K = self.initialize()
         f_values = np.array([self.evaluate(k) for k in K])
         best_idx = np.argmax(f_values) if self.maximize else np.argmin(f_values)
@@ -118,18 +117,23 @@ class StochasticKomodoAlgorithm:
             self.history["best_fitness"].append(best_value)
             self.history["best_position"].append(k_best.copy())
 
+            if progress_callback is not None:
+                progress_callback(t + 1)
+
             iterator.set_postfix({"Best": f"{best_value:.6f}"})
 
         return k_best, best_value
 
-
-def run_ska(func, min_params, max_params, population_size, max_iter=100, verbose=False):
-    """
-    Runner for Stochastic Komodo Algorithm (SKA)
-    """
-
-    iae_model = StochasticKomodoAlgorithm(
-        obj_function="iae",
+def run_ska(
+    func,
+    min_params,
+    max_params,
+    population_size,
+    max_iter=100,
+    verbose=False,
+    progress_callback=None
+):
+    model = StochasticKomodoAlgorithm(
         fitness_function=func,
         min_params=min_params,
         max_params=max_params,
@@ -138,58 +142,11 @@ def run_ska(func, min_params, max_params, population_size, max_iter=100, verbose
         maximize=False,
     )
 
-    ise_model = StochasticKomodoAlgorithm(
-        obj_function="ise",
-        fitness_function=func,
-        min_params=min_params,
-        max_params=max_params,
-        pop_size=population_size,
-        max_iter=max_iter,
-        maximize=False,
+    best_params, best_fitness = model.run(
+        verbose=verbose,
+        progress_callback=progress_callback
     )
 
-    itae_model = StochasticKomodoAlgorithm(
-        obj_function="itae",
-        fitness_function=func,
-        min_params=min_params,
-        max_params=max_params,
-        pop_size=population_size,
-        max_iter=max_iter,
-        maximize=False,
-    )
-
-    itse_model = StochasticKomodoAlgorithm(
-        obj_function="itse",
-        fitness_function=func,
-        min_params=min_params,
-        max_params=max_params,
-        pop_size=population_size,
-        max_iter=max_iter,
-        maximize=False,
-    )
-    
-    iae_best_params, iae_best_fitness = iae_model.run(verbose=verbose)
-    ise_best_params, ise_best_fitness = ise_model.run(verbose=verbose)
-    itae_best_params, itae_best_fitness = itae_model.run(verbose=verbose)
-    itse_best_params, itse_best_fitness = itse_model.run(verbose=verbose)
-
-    best_params = {
-        "iae": iae_best_params, 
-        "ise": ise_best_params, 
-        "itae": itae_best_params, 
-        "itse": itse_best_params
-    }
-    best_fitness = {
-        "iae": iae_best_fitness, 
-        "ise": ise_best_fitness, 
-        "itae": itae_best_fitness, 
-        "itse": itse_best_fitness
-    }
-    curve = {
-        "iae": iae_model.history.get("best_fitness", []),
-        "ise": ise_model.history.get("best_fitness", []),
-        "itae": itae_model.history.get("best_fitness", []),
-        "itse": itse_model.history.get("best_fitness", []),
-    }
+    curve = model.history["best_fitness"]
 
     return best_params, best_fitness, curve

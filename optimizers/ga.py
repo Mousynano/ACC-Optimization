@@ -1,14 +1,12 @@
 import numpy as np
 from random import uniform
 from tqdm import tqdm
-import matplotlib.pyplot as plt
 from core.utils import lerp
 
 class GeneticAlgorithm:
-    def __init__(self, fitness_function, obj_function, min_params, max_params,
+    def __init__(self, fitness_function, min_params, max_params,
                  population_size=30, max_iter=100, mutation_rate=0.4, crossover_rate=0.7, maximize=True):  # default: maximize
         self.fitness_function = fitness_function
-        self.obj_function = obj_function
         self.min_params = np.array(min_params)
         self.max_params = np.array(max_params)
         self.dim = len(min_params)
@@ -55,107 +53,72 @@ class GeneticAlgorithm:
             ])
         return child1, child2
 
-    def run(self, verbose=True):
-        population = np.array([np.array([uniform(self.min_params[i], self.max_params[i]) for i in range(self.dim)]) for _ in range(self.population_size)])
+    def run(self, verbose=True, progress_callback=None):
+        """
+        Runs GA for max_iter iterations.
+        progress_callback(step:int) is called on every iteration.
+        """
 
-        iterator = tqdm(range(self.max_iter), desc="Optimizing with GA", ncols=100, disable=not verbose)
+        population = np.array([
+            np.array([uniform(self.min_params[i], self.max_params[i]) for i in range(self.dim)])
+            for _ in range(self.population_size)
+        ])
+
+        iterator = tqdm(range(self.max_iter), desc="Optimizing with GA", disable=not verbose) \
+                if verbose else range(self.max_iter)
 
         for t in iterator:
-            fitness = np.array([self.fitness_function(ind, self.obj_function) for ind in population])
-            sorted_indices = np.argsort(fitness)[::-1] if self.maximize else np.argsort(fitness)
 
-            # Elitism 
-            best_idx = sorted_indices[0]
-            second_best_idx = sorted_indices[1]
+            # Compute fitness
+            fitness = np.array([
+                self.fitness_function(ind)  # <─ IMPORTANT: objective already embedded in wrapper
+                for ind in population
+            ])
+
+            sorted_idx = np.argsort(fitness)[::-1] if self.maximize else np.argsort(fitness)
+
+            best_idx = sorted_idx[0]
+            second_best_idx = sorted_idx[1]
+
             best_params = population[best_idx]
-            second_best_params = population[second_best_idx]
-            
-            # Crossover & Mutation
-            child1, child2 = self.__crossover(best_params, second_best_params)
+            best_fit = fitness[best_idx]
+
+            # Crossover & mutation
+            child1, child2 = self.__crossover(best_params, population[second_best_idx])
             child1, child2 = self.__mutation(child1, child2)
 
-            # Update population
-            worst_idx = sorted_indices[-1]
-            second_worst_idx = sorted_indices[-2]
-            population[worst_idx] = child1
-            population[second_worst_idx] = child2
+            # Replace worst individuals
+            population[sorted_idx[-1]] = child1
+            population[sorted_idx[-2]] = child2
 
-            # Track best fitness and params
-            best_fitness = fitness[best_idx]
-            self.history["best_fitness"].append(best_fitness)
-            self.history["best_position"].append(best_params)
-        
-        return best_params, best_fitness
+            # Save history
+            self.history["best_fitness"].append(best_fit)
+            self.history["best_position"].append(best_params.copy())
+
+            # Progress callback
+            if progress_callback is not None:
+                progress_callback(t + 1)
+
+        return best_params, best_fit
+
     
-def run_ga(func, min_params, max_params, population_size, max_iter=100, verbose=False):
-    iae_model = GeneticAlgorithm(
-        obj_function="iae",
-        fitness_function=func,
+def run_ga(func, min_params, max_params, population_size, max_iter=100, verbose=False, progress_callback=None):
+    model = GeneticAlgorithm(
+        fitness_function=func,    # <─ only one objective
         min_params=min_params,
         max_params=max_params,
         population_size=population_size,
         max_iter=max_iter,
-        mutation_rate=0.3,
-        crossover_rate=0.7,
         maximize=False
     )
 
-    ise_model = GeneticAlgorithm(
-        obj_function="ise",
-        fitness_function=func,
-        min_params=min_params,
-        max_params=max_params,
-        population_size=population_size,
-        max_iter=max_iter,
-        mutation_rate=0.3,
-        crossover_rate=0.7,
-        maximize=False
-    )
-    itae_model = GeneticAlgorithm(
-        obj_function="itae",
-        fitness_function=func,
-        min_params=min_params,
-        max_params=max_params,
-        population_size=population_size,
-        max_iter=max_iter,
-        mutation_rate=0.3,
-        crossover_rate=0.7,
-        maximize=False
-    )
-    itse_model = GeneticAlgorithm(
-        obj_function="itse",
-        fitness_function=func,
-        min_params=min_params,
-        max_params=max_params,
-        population_size=population_size,
-        max_iter=max_iter,
-        mutation_rate=0.3,
-        crossover_rate=0.7,
-        maximize=False
+    best_params, best_fit = model.run(
+        verbose=verbose,
+        progress_callback=progress_callback
     )
 
-    iae_best_params, iae_best_fitness = iae_model.run(verbose=verbose)
-    ise_best_params, ise_best_fitness = ise_model.run(verbose=verbose)
-    itae_best_params, itae_best_fitness = itae_model.run(verbose=verbose)
-    itse_best_params, itse_best_fitness = itse_model.run(verbose=verbose)
-
-    best_params = {
-        "iae": iae_best_params, 
-        "ise": ise_best_params, 
-        "itae": itae_best_params, 
-        "itse": itse_best_params
-    }
-    best_fitness = {
-        "iae": iae_best_fitness, 
-        "ise": ise_best_fitness, 
-        "itae": itae_best_fitness, 
-        "itse": itse_best_fitness
-    }
-    curve = {
-        "iae": iae_model.history.get("best_fitness", []),
-        "ise": ise_model.history.get("best_fitness", []),
-        "itae": itae_model.history.get("best_fitness", []),
-        "itse": itse_model.history.get("best_fitness", []),
-    }
-
-    return best_params, best_fitness, curve
+    return (
+        best_params,
+        best_fit,
+        model.history["best_fitness"]
+    )
