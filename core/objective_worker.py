@@ -1,3 +1,5 @@
+import inspect
+
 def objective_worker(
     algo_name,
     obj_name,
@@ -9,36 +11,34 @@ def objective_worker(
     population_size,
     max_iter,
     sub_progress,
-    status_for_algo
+    status
 ):
 
-    # Callback → update ONE objective bar
+    key = (algo_name, obj_name)
+
     def cb(step):
-        row = sub_progress[algo_name]  # old row
-        new_row = row.copy()
-        new_row[obj_name] = step
-        sub_progress[algo_name] = new_row  # reassign → this forces sync
+        sub_progress[key] = step
 
-
-    # Wrap the fitness function to embed objective
     def fitness_wrapper(params):
-        return fitness_fn(params, obj_fn)   # <- your function from objectives dict
+        if len(inspect.signature(fitness_fn).parameters) == 2:
+            return fitness_fn(params, obj_fn)
+        return fitness_fn(params)
 
-    # Run the algorithm for this objective only
+
     sol, best_fit, curve = algo_runner(
-        func=fitness_wrapper,        # <─ use wrapper
+        func=fitness_wrapper,
         min_params=min_params,
         max_params=max_params,
         population_size=population_size,
         max_iter=max_iter,
-        verbose=True,
-        progress_callback=cb         # <─ key line
+        verbose=False,
+        progress_callback=cb,
     )
 
-    status_for_algo[obj_name] = {
+    status[key] = {
         "solution": sol,
         "fitness": best_fit,
         "curve": curve,
     }
 
-    sub_progress[algo_name][obj_name] = max_iter
+    sub_progress[key] = max_iter

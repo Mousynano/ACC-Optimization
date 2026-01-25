@@ -1,2 +1,10 @@
 */__pycache__
 output
+legacy
+checkpoint
+.env
+logs
+checkpoint_jobs
+*.log
+*.csv
+*.txt

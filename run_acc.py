@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from benchmarks.sisken_prastiyanto import lean_simulate_system
+
+from benchmarks.sisken_prastiyanto import balls, lean_simulate_system_noisy, lean_simulate_system, lean_simulate_system_legacy
+from core.utils import itse, cappiello_iae
 
 def plot_simulation(history):
     time = history["time"]
@@ -8,7 +10,6 @@ def plot_simulation(history):
     v_lead = history["v_lead"]
     dist = history["dist"]
     a_ego = history["a_ego"]
-    mode = history["mode"]
     car_force = history["car_force"]
 
     # Hitung safe distance untuk plot
@@ -18,7 +19,6 @@ def plot_simulation(history):
     d_safe = d_def + Tg * v_ego_arr
 
     # Konversi mode ACC menjadi angka untuk plotting
-    mode_numeric = [1 if m == "AVC" else 0 for m in mode]
 
     plt.figure(figsize=(14, 10))
 
@@ -65,5 +65,12 @@ def plot_simulation(history):
 
 
 if __name__ == "__main__":
-    fitness, history = lean_simulate_system([10.,          1.46366156, -4.5446224 ], return_history=True)
+    # history = simulate_step_response(
+    #   [
+    #     10,
+    #     1.33986797,
+    #     -0.48004842
+    #   ],
+    # )
+    obj_val, history = lean_simulate_system([ 10.,           0.42077545, -10.        ], obj_fun=cappiello_iae, return_history=True)
     plot_simulation(history)
