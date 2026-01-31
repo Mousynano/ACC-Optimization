@@ -8,6 +8,8 @@ Implementasi Python oleh:
     Pejalan Sunyi (2025)
 """
 
+from core.xp import xp, to_cpu, GPU_AVAILABLE
+# from core.seeding import seed_everything
 from typing import Callable, List, Tuple, Optional
 import numpy as np
 import math
@@ -36,13 +38,13 @@ class KomodoMlipirAlgorithm:
     
     def __init__(
         self,
-        population_size: int = 5,
+        population_size: int = 100,
         male_proportion: float = 0.5,
         mlipir_rate: float = 0.5,
         fitness_function: Optional[Callable] = None,
         search_space: Optional[List[Tuple[float, float]]] = None,
-        max_iterations: int = 1000,
-        random_state: int = 42,
+        max_iterations: int = 300,
+        random_state: int = 0,
         parthenogenesis_radius: float = 0.1,
         stop_criteria: float = 0.01,
         stop: bool = False,
@@ -62,19 +64,19 @@ class KomodoMlipirAlgorithm:
         self.fitness_function = fitness_function
         self.search_space = search_space
         self.max_iterations = max_iterations
-        self.random_state = random_state
+        self.random_state = random_state if random_state else None
         self.parthenogenesis_radius = parthenogenesis_radius
         self.stop_criteria = stop_criteria
         self.stop = stop
         self.maximize = maximize
         
         # Initialize random number generators
-        # np.random.seed(self.random_state)
-        self.rng = np.random.default_rng(self.random_state)
+        # xp.random.seed(self.random_state)
+        self.rng = xp.random.default_rng(self.random_state)
         
         # Initialize population and fitness
         self.population = self._initialize_population()
-        self.fitness_values = np.zeros(self.population_size)
+        self.fitness_values = xp.zeros(self.population_size)
         
         # Initialize tracking variables
         self.history = {"best_fitness": [], "best_solution": []}
@@ -111,7 +113,7 @@ class KomodoMlipirAlgorithm:
         if max_iterations < 1:
             raise ValueError("Maximum iterations must be at least 1")
     
-    def _initialize_population(self) -> np.ndarray:
+    def _initialize_population(self) -> xp.ndarray:
         """Inisialisasi populasi dengan distribusi uniform."""
         dimensions = len(self.search_space)
         population = self.rng.uniform(0, 1, (self.population_size, dimensions))
@@ -122,7 +124,7 @@ class KomodoMlipirAlgorithm:
         
         return population
     
-    def _calculate_fitness(self, individuals: np.ndarray) -> np.ndarray:
+    def _calculate_fitness(self, individuals: xp.ndarray) -> xp.ndarray:
         """
         Hitung nilai fitness untuk setiap individu.
         
@@ -132,12 +134,10 @@ class KomodoMlipirAlgorithm:
         Returns:
             Array nilai fitness
         """
-        return np.array([
-            self.fitness_function(individual) 
-            for individual in individuals
-        ])
+        fitness = [self.fitness_function(to_cpu(individual)) for individual in individuals]
+        return xp.asarray(fitness)
     
-    def _clip_to_bounds(self, individual: np.ndarray) -> np.ndarray:
+    def _clip_to_bounds(self, individual: xp.ndarray) -> xp.ndarray:
         """
         Batasi nilai individu agar tetap dalam search space.
         
@@ -147,16 +147,22 @@ class KomodoMlipirAlgorithm:
         Returns:
             Individu yang telah dibatasi
         """
-        return np.array([
-            np.clip(value, lower, upper)
-            for value, (lower, upper) in zip(individual, self.search_space)
-        ])
+        # return xp.asarray([
+        #     xp.clip(value, lower, upper)
+        #     for value, (lower, upper) in zip(individual, self.search_space)
+        # ])
+
+        clipped = xp.copy(individual)
+        for i, (lower, upper) in enumerate(self.search_space):
+            clipped[i] = xp.clip(clipped[i], lower, upper)
+        return clipped
+    
     
     def _sort_by_fitness(
         self, 
-        population: np.ndarray, 
-        fitness_values: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray]:
+        population: xp.ndarray, 
+        fitness_values: xp.ndarray
+    ) -> Tuple[xp.ndarray, xp.ndarray]:
         """
         Urutkan populasi berdasarkan fitness (descending).
         
@@ -167,13 +173,15 @@ class KomodoMlipirAlgorithm:
         Returns:
             Tuple populasi dan fitness yang telah diurutkan
         """
-        sort_indices = np.argsort(fitness_values)[::-1] if self.maximize else np.argsort(fitness_values)
+        sort_indices = xp.argsort(fitness_values)
+        if self.maximize:
+            sort_indices = sort_indices[::-1]
         return population[sort_indices], fitness_values[sort_indices]
     
     def _divide_population(
         self, 
-        sorted_population: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        sorted_population: xp.ndarray
+    ) -> Tuple[xp.ndarray, xp.ndarray, xp.ndarray]:
         """
         Bagi populasi menjadi jantan besar, betina, dan jantan kecil.
         
@@ -191,9 +199,9 @@ class KomodoMlipirAlgorithm:
     
     def _move_big_males(
         self, 
-        big_males: np.ndarray, 
-        fitness_values: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray]:
+        big_males: xp.ndarray, 
+        fitness_values: xp.ndarray
+    ) -> Tuple[xp.ndarray, xp.ndarray]:
         """
         Update posisi jantan besar berdasarkan interaksi antar individu.
         
@@ -205,7 +213,7 @@ class KomodoMlipirAlgorithm:
             Tuple jantan besar dan fitness yang telah diupdate
         """
         n_males = len(big_males)
-        movement_vectors = np.zeros_like(big_males)
+        movement_vectors = xp.zeros_like(big_males)
         
         # Calculate movement for each big male
         for i in range(n_males):
@@ -218,7 +226,7 @@ class KomodoMlipirAlgorithm:
         
         # Update positions
         new_males = big_males + movement_vectors
-        new_males = np.array([
+        new_males = xp.asarray([
             self._clip_to_bounds(male) for male in new_males
         ])
         
@@ -232,11 +240,11 @@ class KomodoMlipirAlgorithm:
     
     def _calculate_male_interaction(
         self,
-        male_i: np.ndarray,
-        male_j: np.ndarray,
+        male_i: xp.ndarray,
+        male_j: xp.ndarray,
         fitness_i: float,
         fitness_j: float
-    ) -> np.ndarray:
+    ) -> xp.ndarray:
         """Hitung vektor interaksi antara dua jantan."""
         r1 = self.rng.standard_normal()
         r2 = self.rng.standard_normal()
@@ -250,14 +258,14 @@ class KomodoMlipirAlgorithm:
     
     def _select_best_males(
         self,
-        old_males: np.ndarray,
-        new_males: np.ndarray,
-        old_fitness: np.ndarray,
-        new_fitness: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray]:
+        old_males: xp.ndarray,
+        new_males: xp.ndarray,
+        old_fitness: xp.ndarray,
+        new_fitness: xp.ndarray
+    ) -> Tuple[xp.ndarray, xp.ndarray]:
         """Pilih jantan terbaik dari generasi lama dan baru."""
-        all_males = np.vstack([old_males, new_males])
-        all_fitness = np.concatenate([old_fitness, new_fitness])
+        all_males = xp.vstack([old_males, new_males])
+        all_fitness = xp.hstack([old_fitness, new_fitness])
         
         sorted_males, sorted_fitness = self._sort_by_fitness(
             all_males, all_fitness
@@ -270,9 +278,9 @@ class KomodoMlipirAlgorithm:
     
     def _move_female(
         self, 
-        best_male: np.ndarray, 
-        female: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray]:
+        best_male: xp.ndarray, 
+        female: xp.ndarray
+    ) -> Tuple[xp.ndarray, xp.ndarray]:
         """
         Update posisi betina melalui mating atau parthenogenesis.
         
@@ -290,9 +298,9 @@ class KomodoMlipirAlgorithm:
     
     def _perform_mating(
         self, 
-        male: np.ndarray, 
-        female: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray]:
+        male: xp.ndarray, 
+        female: xp.ndarray
+    ) -> Tuple[xp.ndarray, xp.ndarray]:
         """Lakukan perkawinan antara jantan dan betina."""
         r1 = self.rng.standard_normal()
         
@@ -308,19 +316,19 @@ class KomodoMlipirAlgorithm:
         fitness2 = self.fitness_function(offspring2)
         
         if (fitness2 >= fitness1 and self.maximize) or (fitness1 >= fitness2 and not self.maximize):
-            return np.array([offspring2]), np.array([fitness2])
+            return xp.asarray([offspring2]), xp.asarray([fitness2])
         else:
-            return np.array([offspring1]), np.array([fitness1])
+            return xp.asarray([offspring1]), xp.asarray([fitness1])
     
     def _perform_parthenogenesis(
         self, 
-        female: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray]:
+        female: xp.ndarray
+    ) -> Tuple[xp.ndarray, xp.ndarray]:
         """Lakukan reproduksi aseksual (parthenogenesis)."""
         r = self.rng.standard_normal()
         
         # Calculate search space ranges
-        ranges = np.array([
+        ranges = xp.asarray([
             abs(upper - lower) 
             for lower, upper in self.search_space
         ])
@@ -331,13 +339,13 @@ class KomodoMlipirAlgorithm:
         
         fitness = self.fitness_function(offspring)
         
-        return np.array([offspring]), np.array([fitness])
+        return xp.asarray([offspring]), xp.asarray([fitness])
     
     def _move_small_males(
         self, 
-        big_males: np.ndarray, 
-        small_males: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray]:
+        big_males: xp.ndarray, 
+        small_males: xp.ndarray
+    ) -> Tuple[xp.ndarray, xp.ndarray]:
         """
         Update posisi jantan kecil berdasarkan mlipir behavior.
         
@@ -348,7 +356,7 @@ class KomodoMlipirAlgorithm:
         Returns:
             Tuple jantan kecil dan fitness yang telah diupdate
         """
-        new_small_males = np.copy(small_males)
+        new_small_males = xp.copy(small_males)
         
         for i, small_male in enumerate(new_small_males):
             movement = self._calculate_mlipir_movement(
@@ -357,7 +365,7 @@ class KomodoMlipirAlgorithm:
             new_small_males[i] = small_male + movement
         
         # Clip to bounds
-        new_small_males = np.array([
+        new_small_males = xp.asarray([
             self._clip_to_bounds(male) for male in new_small_males
         ])
         
@@ -367,11 +375,11 @@ class KomodoMlipirAlgorithm:
     
     def _calculate_mlipir_movement(
         self, 
-        small_male: np.ndarray, 
-        big_males: np.ndarray
-    ) -> np.ndarray:
+        small_male: xp.ndarray, 
+        big_males: xp.ndarray
+    ) -> xp.ndarray:
         """Hitung vektor pergerakan mlipir untuk jantan kecil."""
-        movement = np.zeros_like(small_male)
+        movement = xp.zeros_like(small_male)
         
         for big_male in big_males:
             for dim in range(len(small_male)):
@@ -383,9 +391,9 @@ class KomodoMlipirAlgorithm:
     
     def _generate_new_individuals(
         self, 
-        best_individual: np.ndarray, 
+        best_individual: xp.ndarray, 
         n_individuals: int = 5
-    ) -> np.ndarray:
+    ) -> xp.ndarray:
         """Generate individu baru di sekitar individu terbaik."""
         new_individuals = []
         
@@ -395,7 +403,7 @@ class KomodoMlipirAlgorithm:
             new_individual = self._clip_to_bounds(new_individual)
             new_individuals.append(new_individual)
         
-        return np.array(new_individuals)
+        return xp.asarray(new_individuals)
     
     def _apply_adaptive_schema(
         self, 
@@ -435,8 +443,8 @@ class KomodoMlipirAlgorithm:
             new_individuals = self._generate_new_individuals(sorted_pop[0])
             new_fitness = self._calculate_fitness(new_individuals)
             
-            self.population = np.vstack([self.population, new_individuals])
-            self.fitness_values = np.concatenate([
+            self.population = xp.vstack([self.population, new_individuals])
+            self.fitness_values = xp.concatenate([
                 self.fitness_values, new_fitness
             ])
             self.population_size = len(self.population)
@@ -458,6 +466,7 @@ class KomodoMlipirAlgorithm:
             verbose: Tampilkan progress
         """
         # Initial fitness calculation
+
         self.fitness_values = self._calculate_fitness(self.population)
 
         # Inisialisasi progress bar
@@ -469,7 +478,6 @@ class KomodoMlipirAlgorithm:
         )
 
         for iteration in iterator:
-            # self._log(f"\n🌀 Iterasi {iteration+1}/{self.max_iterations}", verbose)
             # Sort population
             self.population, self.fitness_values = self._sort_by_fitness(
                 self.population, self.fitness_values
@@ -477,12 +485,7 @@ class KomodoMlipirAlgorithm:
             
             # Divide population
             big_males, female, small_males = self._divide_population(self.population)
-
-            # self._log("🔹 Populasi diurutkan berdasarkan fitness.", verbose)
-            # self._log(f"   - Jantan besar: {len(big_males)} individu", verbose)
-            # self._log(f"   - Jantan kecil: {len(small_males)} individu", verbose)
-            # self._log("   - 1 betina tengah dipilih untuk proses mating/parthenogenesis", verbose)
-
+            
             # Fitness per grup
             n_big = len(big_males)
             fitness_big = self.fitness_values[:n_big]
@@ -494,17 +497,12 @@ class KomodoMlipirAlgorithm:
             female, fitness_female = self._move_female(big_males[0], female)
             small_males, fitness_small = self._move_small_males(big_males, small_males)
 
-            # self._log("⚔️  Jantan besar saling berinteraksi dan memperbaiki posisi.", verbose)
-            # self._log("💞  Betina melakukan mating/parthenogenesis untuk menghasilkan keturunan.", verbose)
-            # self._log("🌀  Jantan kecil melakukan pergerakan mlipir mendekati jantan besar.", verbose)
-
             # Combine populations
-            self.population = np.vstack([big_males, small_males, female])
-            self.fitness_values = np.concatenate([fitness_big, fitness_small, fitness_female])
+            self.population = xp.vstack([big_males, small_males, female])
+            self.fitness_values = xp.concatenate([fitness_big, fitness_small, fitness_female])
 
             # Update best
             self._update_best_solution()
-            # self._log(f"🏆  Best fitness saat ini: {self.best_fitness:.6f}", verbose)
 
             # Update progress bar dengan best fitness saat ini
             iterator.set_postfix({"Best": f"{self.best_fitness:.6f}"})
@@ -520,7 +518,6 @@ class KomodoMlipirAlgorithm:
             # Cek konvergensi
             if self._check_convergence() and self.stop:
                 iterator.set_postfix({"Status": "Converged"})
-                # self._log("✅ Algoritma telah konvergen — perbedaan fitness < stop_criteria", verbose)
                 break
     
     def _log(self, message: str, verbose: bool = True) -> None:
@@ -530,7 +527,7 @@ class KomodoMlipirAlgorithm:
 
     def _update_best_solution(self) -> None:
         """Update solusi terbaik yang ditemukan."""
-        current_best_idx = np.argmax(self.fitness_values) if self.maximize else np.argmin(self.fitness_values)
+        current_best_idx = xp.argmax(self.fitness_values) if self.maximize else xp.argmin(self.fitness_values)
         current_best_fitness = self.fitness_values[current_best_idx]
         
         if self.best_fitness is None or (self.maximize and current_best_fitness > self.best_fitness) or ((not self.maximize) and current_best_fitness < self.best_fitness):
@@ -546,7 +543,7 @@ class KomodoMlipirAlgorithm:
             return False
         
         recent_fitness = self.history["best_fitness"][-10:]
-        fitness_std = np.std(recent_fitness)
+        fitness_std = xp.std(recent_fitness)
         
         return fitness_std < self.stop_criteria
     
@@ -578,21 +575,24 @@ def build_search_space(min_params, max_params):
 # Aliases and exports
 KMA = KomodoMlipirAlgorithm
 
-def run_kma(func, min_params, max_params, population_size, max_iter=100, verbose=False, progress_callback=None):
+def run_kma(func, min_params, max_params, population_size, max_iter=100, verbose=False, progress_callback=None, seed=None):
     """
     Single-objective runner for KMA, used by objective_worker.
     """
+
+    # if seed is not None:
+    #     seed_everything(seed, xp=xp)
+
     search_space = build_search_space(min_params, max_params)
 
     model = KMA(
         population_size=population_size,
-        male_proportion=0.4,
-        mlipir_rate=0.7,
         fitness_function=func,
         search_space=search_space,
         max_iterations=max_iter,
         maximize=False,
-        progress_callback=progress_callback
+        progress_callback=progress_callback,
+        random_state=seed if seed is not None else 0
     )
 
     model.fit(

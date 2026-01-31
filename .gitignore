@@ -1,2 +1,8 @@
 */__pycache__
 output
+legacy
+checkpoint
+.env
+logs
+checkpoint_jobs
+hyperparam_benchmarking
