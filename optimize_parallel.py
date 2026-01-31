@@ -3,6 +3,7 @@ import os
 import hashlib
 
 import concurrent.futures
+import argparse
 
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from multiprocessing import Manager
@@ -18,7 +19,7 @@ from optimizers.ska import run_ska
 from optimizers.hoa import run_hoa
 
 from core.utils import iae, ise, itae, itse, cappiello_iae, cappiello_ise, cappiello_itae, cappiello_itse
-from core.report import generate_statistical_report, generate_convergence_plot
+from core.report import generate_statistical_report, generate_convergence_plot, generate_time_plots
 from core.job_worker import run_job
 from core.checkpoint_jobs import save_job_checkpoint, job_done, load_all_job_checkpoints
 from core.run_completion import is_run_complete, load_run_curves
@@ -111,6 +112,10 @@ def slot_progress_fraction(progress_dict, fun_name, run_id, algo_name, obj_name,
 def main():
     ensure_outdir()
 
+    parser = argparse.ArgumentParser(description="Run optimizations or create placeholder checkpoints.")
+    parser.add_argument("--create-checkpoints-only", action="store_true", help="Create checkpoint .pkl files for all jobs without running optimizations")
+    args = parser.parse_args()
+
     manager = Manager()
     progress = manager.dict()  # key: (fun,run,algo,obj) -> iter
     status = manager.dict()    # optional
@@ -122,8 +127,32 @@ def main():
     else:
         print(f"Total pending jobs: {len(jobs)} (concurrency={MAX_CONCURRENT_ALGOS})")
 
-        # progress bar overall
-        overall = tqdm(total=len(jobs), desc="All Jobs", ncols=100)
+        # If user asked to only create checkpoint files, do that and skip running algos
+        if args.create_checkpoints_only:
+            print("Creating placeholder checkpoint files for pending jobs...")
+            for fun_name, fitness_fn, run_id, algo_name, obj_name, obj_fn in tqdm(jobs, desc="Creating checkpoints", ncols=100):
+                # deterministic seed for run
+                seed = seed_for_run(fun_name, run_id)
+
+                # create a reasonable placeholder solution: midpoint of parameter ranges
+                midpoint = [(a + b) / 2.0 for a, b in zip(MIN_PARAMS, MAX_PARAMS)]
+
+                save_job_checkpoint(
+                    fun_name, run_id, algo_name, obj_name,
+                    {
+                        "seed": seed,
+                        "best_fitness": float("inf"),
+                        "best_solution": midpoint,
+                        "curve": [],
+                        "duration": 0.0,
+                    }
+                )
+
+            print("Placeholder checkpoints created.")
+            # proceed to final aggregation and report generation below
+        else:
+            # progress bar overall
+            overall = tqdm(total=len(jobs), desc="All Jobs", ncols=100)
 
     with ProcessPoolExecutor(max_workers=MAX_CONCURRENT_ALGOS) as ex:
         futures = {}          # fut -> (fun, run, algo)
