@@ -6,3 +6,10 @@ checkpoint
 logs
 checkpoint_jobs
 hyperparam_benchmarking
+convergence_runs
+figures
+results
+*.pkl
+*.csv
+*.png
+*.jpg
