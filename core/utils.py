@@ -43,6 +43,14 @@ def cappiello_itae(weight, error, time):
 def cappiello_itse(weight, error, time):
     return weight * error**2 * time
 
+def compute_ttc(d_actual, v_ego, v_lead, eps=1e-9):
+    if d_actual <= 0:
+        return 0.0
+    dv = v_ego - v_lead
+    if dv <= eps:
+        return math.inf
+    return d_actual / dv
+
 def dropna(data):
     return [value for value in data if value is not None and not (isinstance(value, float) and math.isnan(value))]
 

@@ -95,7 +95,7 @@ def generate_statistical_report(all_runs, fun_name, filename="results/statistica
 
     print("Report generation done.")
 
-def generate_convergence_plot(history_dict, title, filename="results/convergence_plot.png"):
+def generate_convergence_plot(history_dict, title, filename="data/convergence"):
     """
     history_dict: dict { "algo_name": data }
     

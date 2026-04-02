@@ -11,3 +11,5 @@ results
 *.csv
 *.png
 *.jpg
+*.txt
+*.json
