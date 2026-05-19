@@ -9,14 +9,28 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from multiprocessing import Manager
 from tqdm import tqdm
 
-from benchmarks.sisken_prastiyanto import BENCHMARKS_ACC as SISKEN_BENCH
+from benchmarks.sisken_prastiyanto_wltc import (
+    use_wltc_scenarios,
+    acc_fitness_func,
+    acc_constraint_evaluator,
+)
+
 from benchmarks.simple_funcs import BENCHMARKS as SIMPLE_BENCH
 
+from optimizers.loa_v2 import run_loa_v2
+from optimizers.loa_v3 import run_loa_v3
 from optimizers.pso import run_pso
-from optimizers.ga import run_ga
-from optimizers.kma import run_kma
 from optimizers.ska import run_ska
 from optimizers.hoa import run_hoa
+from optimizers.kma import run_kma
+# from optimizers.hho import run_hho
+from optimizers.gwo import run_gwo
+from optimizers.dbo import run_dbo
+from optimizers.reo import run_reo
+from optimizers.rime import run_rime
+from optimizers.sa_da_rime import run_sa_da_rime
+from optimizers.loa_v2 import run_loa_v2
+from optimizers.loa_v3 import run_loa_v3
 
 from core.utils import iae, ise, itae, itse, cappiello_iae, cappiello_ise, cappiello_itae, cappiello_itse
 from core.report import generate_statistical_report, generate_convergence_plot, generate_time_plots
@@ -30,11 +44,24 @@ from typing import Tuple, Dict, Any, List
 # Registry
 # -----------------------------
 algorithms = {
-    "kma": run_kma,
-    "pso": run_pso,
-    "ska": run_ska,
-    "hoa": run_hoa,
-    "ga": run_ga,
+    "LOA_V3": run_loa_v3,
+    "LOA_V2": run_loa_v2,
+    "PSO": run_pso,
+    # "SKA": run_ska,
+    # "HOA": run_hoa,
+    "KMA": run_kma,
+    "RIME": run_rime,
+    # "HHO": run_hho,
+    "GWO": run_gwo,
+    "DBO": run_dbo,
+    # "REO": run_reo,
+    "SADARIME": run_sa_da_rime
+    # "hho": run_hho,
+    # "gwo": run_gwo,
+    # "dbo": run_dbo,
+    # "pso_kennedy": run_pso_kennedy,
+    # "reo": run_reo,
+    # "ireo_template": run_ireo_template,
 }
 
 objectives = {
@@ -42,19 +69,25 @@ objectives = {
     # "ise": ise,
     # "itae": itae,
     # "itse": itse,
-    "iae": cappiello_iae,
+    # "iae": cappiello_iae,
     "ise": cappiello_ise,
-    "itae": cappiello_itae,
-    "itse": cappiello_itse
+    # "itae": cappiello_itae,
+    # "itse": cappiello_itse
 }
 
 # -----------------------------
 # Config
 # -----------------------------
-fitness_functions = SISKEN_BENCH.items()
+
+wltc_scenario = use_wltc_scenarios()
+
+# For ACC benchmarking
+fitness_functions = [("acc", acc_fitness_func)]
+
+# For mathematical benchmarking
 # fitness_functions = SIMPLE_BENCH.items()
-N_RUNS = 30
-max_iter = 300
+N_RUNS = 1
+max_iter = 20
 population_size = 100
 
 seeds = [i + 1 for i in range(N_RUNS)]

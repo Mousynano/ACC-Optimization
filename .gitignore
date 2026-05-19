@@ -10,6 +10,7 @@ convergence_runs
 figures
 results
 *.pkl
-*.csv
 *.png
 *.jpg
+data
+backup
