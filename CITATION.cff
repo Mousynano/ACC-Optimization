@@ -1,0 +1,44 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "ACC-Optimization"
+type: software
+version: "1.0.0-srep"
+license: "GPL-3.0-only"
+abstract: >-
+  Research software for adaptive cruise control optimization, metaheuristic
+  benchmarking, and reproducible simulation experiments. The framework
+  evaluates GA, PSO, KMA, SKA, and HOA under IAE, ISE, ITAE, and ITSE
+  objective functions, with assessment based on optimization quality,
+  inter-run stability, convergence behavior, computational efficiency,
+  and control-performance validation.
+authors:
+  - family-names: "Prastiyanto"
+    given-names: "Dhidik"
+    affiliation: "Universitas Negeri Semarang"
+  - family-names: "Fauzi"
+    given-names: "Muhamad Kurniawan"
+    affiliation: "Universitas Negeri Semarang"
+  - family-names: "Aprilianto"
+    given-names: "Rizky Ajie"
+    affiliation: "Universitas Negeri Semarang"
+  - family-names: "Sulistyawan"
+    given-names: "Vera Noviana"
+    affiliation: "Universitas Negeri Semarang"
+  - family-names: "Abednego"
+    given-names: "Richky"
+    affiliation: "Universitas Negeri Semarang"
+  - family-names: "Rahmawati"
+    given-names: "Meida Andini"
+    affiliation: "Universitas Negeri Semarang"
+  - family-names: "Prabuwono"
+    given-names: "Anton Satrio"
+    affiliation: "Universiti Teknologi PETRONAS"
+keywords:
+  - adaptive cruise control
+  - metaheuristic optimization
+  - control systems
+  - safety-critical control
+  - benchmarking
+  - simulation
+url: "https://github.com/Mousynano/ACC-Optimization"
+repository-code: "https://github.com/Mousynano/ACC-Optimization"
