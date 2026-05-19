@@ -1,8 +1,14 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from benchmarks.sisken_prastiyanto import balls, lean_simulate_system_noisy, lean_simulate_system, lean_simulate_system_legacy
-from core.utils import itse
+from benchmarks.sisken_prastiyanto_wltc import (
+    use_wltc_scenarios,
+    acc_fitness_func,
+    acc_constraint_evaluator,
+    build_wltc_scenarios,
+    acc_single_scenario_history,
+)
+from core.utils import itse, cappiello_ise
 
 def plot_simulation(history):
     time = history["time"]
@@ -65,9 +71,22 @@ def plot_simulation(history):
 
 
 if __name__ == "__main__":
-    obj_val, history = lean_simulate_system([
-        10.0,
-        4.021529489432665,
-        -10.0
-    ], obj_fun=itse, return_history=True)
+    scenarios = build_wltc_scenarios(
+        csv_path="wltc_class3b.csv",
+        dt=1/60,
+        mode="train"
+    )
+
+    params = [10, 3.59572408, -10]
+
+    obj_val, history = acc_single_scenario_history(
+        params=params,
+        obj_function=itse,
+        scenario=scenarios[0]
+    )
+
+    print("Objective value:", obj_val)
+    print("TTC min:", history.get("ttc_min"))
+    print("Collision:", history.get("collision"))
+
     plot_simulation(history)
