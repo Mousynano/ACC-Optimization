@@ -1,6 +1,9 @@
 import os
 import pickle
 from typing import Dict, Any, List
+from tqdm import tqdm
+
+from core.seeding import seed_for_run
 
 CHECKPOINT_DIR = os.getenv("CHECKPOINT_DIR", "checkpoint_jobs")
 os.makedirs(CHECKPOINT_DIR, exist_ok=True)
@@ -42,15 +45,12 @@ def load_all_job_checkpoints(fun_name: str, algorithms: List[str], objectives: L
             try:
                 # Parse filename: "acc_run_19_ska_itse.pkl"
                 # Ambil bagian setelah "..._run_" dan buang ".pkl"
-                part = fn.split("_run_")[1].replace(".pkl", "")  # "19_ska_itse"
-                tokens = part.split("_")  # ['19', 'ska', 'itse']
-                
-                if len(tokens) < 3: continue 
-
+                part = fn.split("_run_")[1].replace(".pkl", "")
+                tokens = part.split("_")
                 run_id = int(tokens[0])
-                algo = tokens[1]
-                obj = tokens[2]
-
+                obj = tokens[-1]
+                algo = "_".join(tokens[1:-1])
+                
                 # Filter sesuai request
                 if obj in objectives and algo in algorithms:
                     with open(os.path.join(CHECKPOINT_DIR, fn), "rb") as f:
@@ -75,3 +75,35 @@ def load_all_job_checkpoints(fun_name: str, algorithms: List[str], objectives: L
                 stats[obj][algo]["durations"].append(data.get("duration"))
 
     return stats
+
+def create_placeholder_checkpoints(jobs, min_params, max_params):
+    for (
+        fun_name,
+        fitness_fn,
+        run_id,
+        algo_name,
+        obj_name,
+        obj_fn,
+    ) in tqdm(jobs):
+
+        seed = seed_for_run(fun_name, run_id)
+
+        midpoint = [
+            (a + b) / 2
+            for a, b in zip(min_params, max_params)
+        ]
+
+        save_job_checkpoint(
+            fun_name,
+            run_id,
+            algo_name,
+            obj_name,
+            {
+                "seed": seed,
+                "best_fitness": float("inf"),
+                "best_solution": midpoint,
+                "curve": [],
+                "duration": 0.0,
+            },
+        )
+

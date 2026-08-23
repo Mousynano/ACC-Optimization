@@ -1,5 +1,8 @@
 numpy
+cupy
 pandas
 seaborn
 matplotlib
 tqdm
+vulture
+ruff

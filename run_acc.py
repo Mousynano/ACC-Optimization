@@ -8,6 +8,9 @@ from benchmarks.sisken_prastiyanto_wltc import (
     build_wltc_scenarios,
     acc_single_scenario_history,
 )
+
+from benchmarks.benchmark import acc_fopid_fitness_func, acc_constraint_evaluator
+
 from core.utils import itse, cappiello_ise
 
 def plot_simulation(history):
@@ -77,7 +80,7 @@ if __name__ == "__main__":
         mode="train"
     )
 
-    params = [10, 3.59572408, -10]
+    params = [ 4.92235536, 1.41968051, 0.08955723, 0.14250939, 1.81305403, 0.81684026,40.        ]
 
     obj_val, history = acc_single_scenario_history(
         params=params,

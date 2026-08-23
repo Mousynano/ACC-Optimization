@@ -87,10 +87,10 @@ def cosine_mixture(x: np.ndarray, obj_fun: Callable[[float], float]) -> float:
 # Map nama → fungsi, biar gampang dipilih di pipeline
 BENCHMARKS: Dict[str, Callable[[np.ndarray, Callable[[float], float]], float]] = {
     "rastrigin": rastrigin,
-    # "sphere": sphere,
-    # "ackley": ackley,
+    "sphere": sphere,
+    "ackley": ackley,
     # "griewank": griewank,
-    # "rosenbrock": rosenbrock,
+    "rosenbrock": rosenbrock,
     # "zakharov": zakharov,
     # "schwefel": schwefel,
     # "salomon": salomon,
