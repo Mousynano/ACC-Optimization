@@ -1,0 +1,76 @@
+{
+  "protocol_version": "RQ-2026-10-09-canonical-v1",
+  "frozen_training_framework": "2.2-FJE",
+  "research_questions": {
+    "RQ1": "Under one fixed ACC tuning formulation, how do the six optimizers differ in solution quality, inter-run consistency, convergence, and computational cost?",
+    "RQ2": "To what extent do optimization differences appear in cruise and following responses, including profiles withheld from tuning?",
+    "RQ3": "How do fixed-gain performance, recovery, safety, and energy indicators change across the predeclared 12 physical-parameter conditions under matched road-load compensation?",
+    "RQ4": "With the optimizer and tuning protocol fixed, how does including jerk and positive tractive-energy terms change the optimized gains and evaluated controller behavior?"
+  },
+  "permissions": {
+    "all_controller_evaluation": true,
+    "objective_ablation": true,
+    "bounded_recovery_diagnostic": true,
+    "sensor_uncertainty_campaign": false,
+    "sensor_filtering": false,
+    "separate_sensor_sampling": false,
+    "compensation_parameter_mismatch": false,
+    "equal_FE_campaign": false,
+    "actuator_extension_campaign": false
+  },
+  "evaluation": {
+    "controller_scope": "all completed runs; strict coverage by default",
+    "unit_of_replication": "controller",
+    "bootstrap_resamples": 2000,
+    "correlation_permutations": 1999,
+    "correlation_policy": "within optimizer and within profile; exploratory, not causal",
+    "ttc_reporting_threshold_s": 1.5,
+    "nominal_sensor_noise_std_m": 0.0,
+    "nominal_sensor_bias_m": 0.0,
+    "default_actuator": "instantaneous symmetric force limit, unchanged production plant",
+    "primary_RQ3_scope": "12 declared physical conditions; all 180 fixed-gain controllers; matched actual/compensation parameters",
+    "excluded_from_primary_study": [
+      "sensor noise and bias perturbation campaign",
+      "separate sensor sampling clock",
+      "explicit sensor filtering",
+      "actual-versus-nominal compensation mismatch"
+    ],
+    "optional_not_primary": [
+      "custom actuator reporting scenarios via --actuator-config"
+    ],
+    "deferred": [
+      "equal-FE optimization campaign"
+    ]
+  },
+  "recovery": {
+    "initial_equilibrium_speed_mps": 25.0,
+    "disturbance_start_s": 10.0,
+    "disturbance_duration_s": 3.0,
+    "lead_acceleration_mps2": -1.0,
+    "total_duration_s": 60.0,
+    "relative_speed_tolerance_mps": 0.2,
+    "spacing_absolute_tolerance_m": 0.75,
+    "spacing_relative_tolerance_fraction": 0.02,
+    "hold_window_s": 2.0,
+    "definition": "elapsed delay to start of a qualifying hold; report completion time, observation window, and nonrecovered events too"
+  },
+  "ablation": {
+    "optimizer": "de",
+    "mutation_factor": 0.8,
+    "crossover_rate": 0.9,
+    "runs": 30,
+    "population_size": 100,
+    "iterations": 30,
+    "base_seed": 20261004,
+    "profiles": [
+      "full",
+      "without_jerk",
+      "without_energy",
+      "tracking_only"
+    ],
+    "weight_rule": "retain ratios of surviving frozen weights, then normalize sum to one",
+    "pairing": "identical explicit initial population and DE random seed per block",
+    "reuse_old_full_DE": false,
+    "scope": "conditional on canonical DE, frozen nominal FJE plant, and declared profiles"
+  }
+}

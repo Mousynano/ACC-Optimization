@@ -1,0 +1,64 @@
+{
+  "key": {
+    "contract": "153e7775da00f25355d6e79cf967224eaa9a30c742517e45f83008f62e1224d95f9d42f13d776eb0eeb451416469a4f15ed70850292c2e6794cae492369e5928",
+    "controller": "ablation:5f9d42f13d77:without_energy:28",
+    "gains": [
+      0.4299910081571201,
+      86.19678192247252,
+      0.836062995299064
+    ],
+    "scenario_id": "SYN_BOUNDED_RECOVERY",
+    "scenario": "153cb8eb7516943997d0d987aaeb6135c70f054fc32703139127cd242c9a3a0a",
+    "condition": "S0",
+    "physics": null,
+    "actuator": null
+  },
+  "record": {
+    "controller_id": "ablation:5f9d42f13d77:without_energy:28",
+    "algorithm": "de",
+    "run_id": 28,
+    "optimizer_seed": 3422416888,
+    "sensor_seed": 0,
+    "scenario_id": "SYN_BOUNDED_RECOVERY",
+    "condition_id": "S0",
+    "failed": false,
+    "failure_reason": "",
+    "steps_completed": 3600,
+    "expected_steps": 3600,
+    "model": "ideal_compensation_with_force_limits_v1",
+    "role": "synthetic_diagnostic",
+    "no_closing_samples": false,
+    "spacing_rmse_m": 2.332064121768472e-05,
+    "speed_rmse_mps": 0.21312020903796228,
+    "jerk_rms_mps3": 0.12535220583708243,
+    "peak_abs_jerk_mps3": 2.2726760276402227,
+    "peak_abs_accel_mps2": 0.9176270523853726,
+    "min_spacing_m": 46.399999999998954,
+    "ttc_min_s": 43.39081448335961,
+    "ttc_below_threshold_fraction": 0.0,
+    "ttc_closing_below_threshold_fraction": 0.0,
+    "positive_tractive_energy_wh_per_km": 125.08302911348106,
+    "ttc_threshold_crossed": false,
+    "ttc_below_threshold_duration_s": 0.0,
+    "disturbances": 1,
+    "recovered_events": 1,
+    "nonrecovered_events": 0,
+    "recovery_fraction": 1.0,
+    "tte_recovered_median_s": 2.0666666666666664,
+    "recovery_window_s": 47.0
+  },
+  "events": [
+    {
+      "event_id": 0,
+      "disturbance_start_s": 10.0,
+      "disturbance_end_s": 13.0,
+      "observation_window_s": 47.0,
+      "hold_window_s": 2.0,
+      "recovered": true,
+      "tte_s": 2.0666666666666664,
+      "hold_completion_delay_s": 4.066666666666666,
+      "nonrecovery_reason": ""
+    }
+  ],
+  "transitions": []
+}

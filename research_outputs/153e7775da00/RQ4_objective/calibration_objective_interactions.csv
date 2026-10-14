@@ -1,0 +1,9 @@
+scenario_id,metric,n_complete_blocks,interaction_median,ci_low,ci_high,interpretation
+calibration,cruise_speed_rmse,30,0.02497305020223778,0.00416463568226388,0.0536932847830105,exploratory 2x2 objective interaction
+calibration,following_spacing_rmse,30,0.0003086823957943611,-0.002888375537671991,0.003811087904155354,exploratory 2x2 objective interaction
+calibration,realized_jerk_rms,30,1.3465125277247119,0.6504054265271926,1.9878438916815382,exploratory 2x2 objective interaction
+calibration,positive_tractive_energy_wh_per_km,30,0.22409177783431744,0.05349578052226889,0.34045001270557407,exploratory 2x2 objective interaction
+calibration,k_ve,30,67.04889431696438,48.59878898524464,76.95032812622344,exploratory 2x2 objective interaction
+calibration,k_de,30,17.912648518169,-2.2479176155523035,34.0148436006705,exploratory 2x2 objective interaction
+calibration,k_vrel,30,-0.015739231254983665,-0.5913478220703862,0.5579797493243965,exploratory 2x2 objective interaction
+calibration,full_objective_score,30,0.17701520423755446,0.08081727666294514,0.2514631774041729,exploratory 2x2 objective interaction

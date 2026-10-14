@@ -1,0 +1,44 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "ACC-Optimization"
+type: software
+version: "2.1.0-telo"
+license: "GPL-3.0-only"
+abstract: >-
+  Research software for reproducible adaptive cruise control gain optimization.
+  Framework V2.1 constructs a frozen scalar ACC performance criterion from
+  cruise set-speed RMSE, car-following CTG spacing RMSE, and realized jerk RMS
+  using a MOPSO Pareto reference front and Sahib-Ahmed contribution weighting.
+  The frozen criterion is then used to benchmark GA, DE, FVRADE, RNEGDE,
+  Neighborhood-SHADE, and fixed-population DE-NPS-FP across independent runs.
+authors:
+  - family-names: "Prastiyanto"
+    given-names: "Dhidik"
+    affiliation: "Universitas Negeri Semarang"
+  - family-names: "Fauzi"
+    given-names: "Muhamad Kurniawan"
+    affiliation: "Universitas Negeri Semarang"
+  - family-names: "Aprilianto"
+    given-names: "Rizky Ajie"
+    affiliation: "Universitas Negeri Semarang"
+  - family-names: "Sulistyawan"
+    given-names: "Vera Noviana"
+    affiliation: "Universitas Negeri Semarang"
+  - family-names: "Abednego"
+    given-names: "Richky"
+    affiliation: "Universitas Negeri Semarang"
+  - family-names: "Rahmawati"
+    given-names: "Meida Andini"
+    affiliation: "Universitas Negeri Semarang"
+  - family-names: "Prabuwono"
+    given-names: "Anton Satrio"
+    affiliation: "Universiti Teknologi PETRONAS"
+keywords:
+  - adaptive cruise control
+  - metaheuristic optimization
+  - control systems
+  - safety-critical control
+  - benchmarking
+  - simulation
+url: "https://github.com/Mousynano/ACC-Optimization"
+repository-code: "https://github.com/Mousynano/ACC-Optimization"

@@ -1,0 +1,14 @@
+__pycache__/
+.ipynb_checkpoints/
+.env
+logs/
+data/
+output/
+*.pyc
+
+data_external/raw/
+data_external/processed/
+.venv/
+
+# Generated research archives
+research_outputs/*.zip

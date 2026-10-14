@@ -1,0 +1,113 @@
+{
+  "protocol_version": "RQ-2026-10-05-v2",
+  "research": true,
+  "optimizer": "de",
+  "runs": 30,
+  "population_size": 100,
+  "iterations": 30,
+  "base_seed": 20261004,
+  "mutation_factor": 0.8,
+  "crossover_rate": 0.9,
+  "profiles": [
+    "full",
+    "without_jerk",
+    "without_energy",
+    "tracking_only"
+  ],
+  "min_bounds": [
+    -100.0,
+    -100.0,
+    -100.0
+  ],
+  "max_bounds": [
+    100.0,
+    100.0,
+    100.0
+  ],
+  "frozen_weights": [
+    0.42691677883925433,
+    0.4487713389888883,
+    0.1201532427071723,
+    0.004158639464684878
+  ],
+  "weights": {
+    "full": [
+      0.42691677883925444,
+      0.44877133898888844,
+      0.12015324270717233,
+      0.004158639464684879
+    ],
+    "without_jerk": [
+      0.48521719867766633,
+      0.5100562515791939,
+      0.0,
+      0.004726549743139889
+    ],
+    "without_energy": [
+      0.4286995858554871,
+      0.450645410778732,
+      0.12065500336578094,
+      0.0
+    ],
+    "tracking_only": [
+      0.48752149326644,
+      0.5124785067335601,
+      0.0,
+      0.0
+    ]
+  },
+  "scenario_manifest_sha256": "646ad8ecd05a9fed0eb280d6a9978de96ced195d16dd609422fa98699c6c5b71",
+  "cost_profile_sha256": "9f9db47eef345dd5b45c994951599da2c41eb660ad1f806b8cf89d0c985be3b3",
+  "physics": {
+    "nominal_mass_kg": 1500.0,
+    "rolling_resistance": 0.015,
+    "road_slope_deg": 0.0,
+    "max_longitudinal_force_n": 6000.0,
+    "air_density_kg_m3": 1.225,
+    "drag_coefficient": 0.36,
+    "frontal_area_m2": 2.42,
+    "gravity_m_per_s2": 9.81
+  },
+  "controller": {
+    "type": "CTG_two_mode_acceleration_command",
+    "decision_vector": [
+      "k_ve",
+      "k_de",
+      "k_vrel"
+    ],
+    "min_bounds": [
+      -100.0,
+      -100.0,
+      -100.0
+    ],
+    "max_bounds": [
+      100.0,
+      100.0,
+      100.0
+    ],
+    "standstill_distance_m": 20.0,
+    "time_gap_s": 1.2,
+    "nominal_set_speed_m_per_s": 25.0
+  },
+  "sensing": {
+    "architecture": "explicit_range_sensor_boundary",
+    "nominal_noise_std_m": 0.0,
+    "nominal_bias_m": 0.0,
+    "nominal_min_distance_m": 0.0,
+    "nominal_noise_seed": 0,
+    "relative_velocity": "finite_difference_of_successive_sensed_range"
+  },
+  "sampling_hz": 60,
+  "source_sha256": {
+    "benchmarks/acc_cost_fje_v2.py": "ed23b806c392ffb74ef19d0e9553f2033c32f27bfc7e4e8697bfb69f64ddfc20",
+    "core/fast_acc_energy.py": "8345d4aeaf807267d6b0a5fc6df5d9137c63c28af00d8e61daccff941270bed9",
+    "core/fast_acc.py": "2ffb7adcee02ab3fa20223b75fe5d654cb0d998b5669117206949b5f709e3ad0",
+    "optimizers/de.py": "76e1172b56be960acf8a1c0b8c8b8ca196e11e9f64c7985886f216c0dfa566ad",
+    "run_objective_ablation.py": "4a670c078ec9c6e4e302a542029747960bd1779e65c9a401c3e891ee40ea4f41",
+    "research_protocol.json": "14229ba3514bd81074c6e0ea08080b5215ec56f3ba0586f5f315fa87ec5dbb36"
+  },
+  "pairing": "explicit shared initial_population + local DE seed per block",
+  "weight_policy": "retain ratios of surviving frozen weights, then normalize sum to one",
+  "model": "ideal_compensation_with_force_limits_v1",
+  "contract_sha256": "8ccb06d80af3a3ec3f2e8faa4dde4b6250bb8f358a6d851e4838fc3686436cee"
+}

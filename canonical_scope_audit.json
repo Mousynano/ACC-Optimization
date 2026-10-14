@@ -1,0 +1,62 @@
+{
+  "scope_freeze_date": "2026-10-09",
+  "protocol_version": "RQ-2026-10-09-canonical-v1",
+  "source_reconstruction": {
+    "uploaded_archive": "ACC-Optimization-SciRep-evolutionary-integrated(9).zip",
+    "complete_snapshot": "fin.zip",
+    "common_nonvenv_files_sha256_identical": 311,
+    "reason": "uploaded archive omitted required source/data/evidence directories"
+  },
+  "active_scope": {
+    "RQ1": "6 optimizers x 30 runs, frozen FJE",
+    "RQ2": "all 180 controllers; canonical nominal/downstream profiles",
+    "RQ3": "12 matched physical conditions; fixed gains; all 180 controllers",
+    "RQ4": "canonical DE; 4 objective profiles x 30 paired blocks"
+  },
+  "explicitly_omitted": [
+    "sensor noise/bias campaign",
+    "separate sensor sampling",
+    "explicit sensor filtering",
+    "actual-versus-nominal compensation mismatch"
+  ],
+  "deferred": [
+    "equal-FE campaign"
+  ],
+  "optional_not_primary": [
+    "custom actuator reporting via --actuator-config"
+  ],
+  "preserved_evidence": {
+    "RQ1": {
+      "controllers": 180,
+      "score_reconstruction_max_abs_error": 2.220446049250313e-16
+    },
+    "RQ2": {
+      "evaluations": 1080,
+      "heldout_evaluations": 360,
+      "failed_evaluations": 0,
+      "unit": "controller; profiles/transitions are repeated measurements"
+    },
+    "RQ3": {
+      "evaluations": 4320,
+      "conditions": 12,
+      "failed_evaluations": 0,
+      "compensation": "ideal matched road-load compensation; no mismatch claims"
+    },
+    "RQ4": {
+      "status": "complete: 4 objective profiles x 30 paired DE blocks",
+      "scope": "canonical DE only"
+    },
+    "issues": []
+  },
+  "rq4_campaign": "research_ablation/research_5f9d42f13d77",
+  "tests": {
+    "unittest_passed": 50,
+    "failed": 0
+  },
+  "rerun_policy": {
+    "main_180_optimization": "NO",
+    "RQ2_RQ3_scientific_data_collection": "NO; existing canonical evaluations are complete",
+    "RQ4_optimization": "NO; compatible 120-job campaign retained",
+    "fresh_canonical_evidence_contract": "RECOMMENDED: python research_pipeline.py --all --workers 4"
+  }
+}

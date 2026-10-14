@@ -1,0 +1,46 @@
+{
+  "key": {
+    "contract": "153e7775da00f25355d6e79cf967224eaa9a30c742517e45f83008f62e1224d95f9d42f13d776eb0eeb451416469a4f15ed70850292c2e6794cae492369e5928",
+    "controller": "ablation:5f9d42f13d77:tracking_only:2",
+    "gains": [
+      37.07700956366365,
+      79.09560488130715,
+      0.8304848932575083
+    ],
+    "scenario_id": "V2_WLTC",
+    "scenario": "dbae838f1bfced23f975680e876729ba54b8a9142ff0a64b9bf25c9681cdd8df",
+    "condition": "S0",
+    "physics": null,
+    "actuator": null
+  },
+  "record": {
+    "controller_id": "ablation:5f9d42f13d77:tracking_only:2",
+    "algorithm": "de",
+    "run_id": 2,
+    "optimizer_seed": 2453250606,
+    "sensor_seed": 0,
+    "scenario_id": "V2_WLTC",
+    "condition_id": "S0",
+    "failed": false,
+    "failure_reason": "",
+    "steps_completed": 108000,
+    "expected_steps": 108000,
+    "model": "ideal_compensation_with_force_limits_v1",
+    "role": "held_out",
+    "no_closing_samples": false,
+    "spacing_rmse_m": 4.138679380187547e-05,
+    "speed_rmse_mps": 0.5839304349092331,
+    "jerk_rms_mps3": 0.17602744375506785,
+    "peak_abs_jerk_mps3": 2.9271918193098534,
+    "peak_abs_accel_mps2": 1.5028621378492715,
+    "min_spacing_m": 20.0,
+    "ttc_min_s": 14.117043818400271,
+    "ttc_below_threshold_fraction": 0.0,
+    "ttc_closing_below_threshold_fraction": 0.0,
+    "positive_tractive_energy_wh_per_km": 166.44848631718435,
+    "ttc_threshold_crossed": false,
+    "ttc_below_threshold_duration_s": 0.0
+  },
+  "events": [],
+  "transitions": []
+}

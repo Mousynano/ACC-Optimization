@@ -1,0 +1,45 @@
+{
+  "RQ1": {
+    "controllers": 180,
+    "score_reconstruction_max_abs_error": 2.220446049250313e-16
+  },
+  "RQ2": {
+    "evaluations": 1080,
+    "heldout_evaluations": 360,
+    "failed_evaluations": 0,
+    "unit": "controller; profiles/transitions are repeated measurements"
+  },
+  "RQ3": {
+    "evaluations": 4320,
+    "conditions": 12,
+    "failed_evaluations": 0,
+    "compensation": "ideal matched road-load compensation; no mismatch claims",
+    "extensions": {
+      "RQ": "RQ3",
+      "model": "evaluation_extensions_v2",
+      "evaluations": 62100,
+      "controllers": 180,
+      "optimizer_groups": 6,
+      "conditions": 50,
+      "sensor_seed_repetitions": 5,
+      "failed_evaluations": 0,
+      "collision_evaluations": 0,
+      "profiles": [
+        "SYN_BOUNDED_RECOVERY",
+        "SYN_CRUISE_VSET_10X",
+        "V1_CASALE",
+        "V2_WLTC"
+      ],
+      "unit_of_replication": "controller; seeds/profiles are repeated measurements",
+      "performance_summary": "completed seeds only; failure counts and paired exclusions retained",
+      "main_training_modified": false,
+      "equal_FE": "postponed",
+      "issues": []
+    }
+  },
+  "RQ4": {
+    "status": "complete: 4 objective profiles x 30 paired DE blocks",
+    "scope": "canonical DE only"
+  },
+  "issues": []
+}

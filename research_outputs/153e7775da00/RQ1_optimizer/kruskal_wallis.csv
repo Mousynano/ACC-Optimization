@@ -1,0 +1,6 @@
+metric,test,statistic,p_value,groups,pairing
+fitness,Kruskal-Wallis independent runs,128.20817679558013,5.711662867131084e-26,6,none
+cruise_speed_rmse,Kruskal-Wallis independent runs,61.3106691221609,6.51256979381875e-12,6,none
+following_spacing_rmse,Kruskal-Wallis independent runs,113.9621362799262,5.953574913781096e-23,6,none
+realized_jerk_rms,Kruskal-Wallis independent runs,61.421731123388554,6.1769886900258634e-12,6,none
+positive_tractive_energy_wh_per_km,Kruskal-Wallis independent runs,62.530804174340005,3.641100735383062e-12,6,none

@@ -1,0 +1,46 @@
+{
+  "key": {
+    "contract": "153e7775da00f25355d6e79cf967224eaa9a30c742517e45f83008f62e1224d9",
+    "controller": "acc_cost_sahib_fje_v2:ga:4",
+    "gains": [
+      2.5206544928467185,
+      11.719529063276445,
+      0.3385756987448987
+    ],
+    "scenario_id": "SYN_FOLLOW_SINUSOIDAL",
+    "scenario": "c4170d5ecde0de1d62834a6b595db6a1a74d55d7ceff5a88ca9502cb4dd77b4d",
+    "condition": "S0",
+    "physics": null,
+    "actuator": null
+  },
+  "record": {
+    "controller_id": "acc_cost_sahib_fje_v2:ga:4",
+    "algorithm": "ga",
+    "run_id": 4,
+    "optimizer_seed": 3706181783,
+    "sensor_seed": 0,
+    "scenario_id": "SYN_FOLLOW_SINUSOIDAL",
+    "condition_id": "S0",
+    "failed": false,
+    "failure_reason": "",
+    "steps_completed": 3600,
+    "expected_steps": 3600,
+    "model": "ideal_compensation_with_force_limits_v1",
+    "role": "synthetic_diagnostic",
+    "no_closing_samples": false,
+    "spacing_rmse_m": 1.5157208682062742,
+    "speed_rmse_mps": 1.0555869048823172,
+    "jerk_rms_mps3": 3.0069289038374087,
+    "peak_abs_jerk_mps3": 110.69754926715893,
+    "peak_abs_accel_mps2": 4.056812758076684,
+    "min_spacing_m": 46.73505983132361,
+    "ttc_min_s": 9.475969101567594,
+    "ttc_below_threshold_fraction": 0.0,
+    "ttc_closing_below_threshold_fraction": 0.0,
+    "positive_tractive_energy_wh_per_km": 223.72539520193172,
+    "ttc_threshold_crossed": false,
+    "ttc_below_threshold_duration_s": 0.0
+  },
+  "events": [],
+  "transitions": []
+}

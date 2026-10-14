@@ -1,0 +1,7 @@
+scenario_id,tte_applicable,reason
+C1_OPENACC_ASTAZERO,False,TTE intentionally not reported for continuous/non-preregistered equilibrium disturbances
+C2_OPENACC_VICOLUNGO,False,TTE intentionally not reported for continuous/non-preregistered equilibrium disturbances
+V1_CASALE,True,Frozen OpenACC Casale 50-120 s local-equilibrium disturbance window
+V2_WLTC,False,TTE intentionally not reported for continuous/non-preregistered equilibrium disturbances
+V3_LEGACY,False,TTE intentionally not reported for continuous/non-preregistered equilibrium disturbances
+SYN_FOLLOW_SINUSOIDAL,False,TTE intentionally not reported for continuous/non-preregistered equilibrium disturbances
