@@ -1,16 +1,20 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
-title: "ACC-Optimization"
+title: "Evolutionary Optimization for Adaptive Cruise Control"
 type: software
-version: "2.1.0-telo"
+version: "2.0.0"
+date-released: 2026-10-15
 license: "GPL-3.0-only"
 abstract: >-
-  Research software for reproducible adaptive cruise control gain optimization.
-  Framework V2.1 constructs a frozen scalar ACC performance criterion from
-  cruise set-speed RMSE, car-following CTG spacing RMSE, and realized jerk RMS
-  using a MOPSO Pareto reference front and Sahib-Ahmed contribution weighting.
-  The frozen criterion is then used to benchmark GA, DE, FVRADE, RNEGDE,
-  Neighborhood-SHADE, and fixed-population DE-NPS-FP across independent runs.
+  Research software and reproducibility package for a comparative study of
+  evolutionary optimization methods applied to a three-gain Adaptive Cruise
+  Control controller. The frozen V2.2-FJE formulation combines cruise-speed
+  RMSE, car-following CTG-spacing RMSE, realized longitudinal jerk RMS, and
+  positive tractive-energy intensity. The release includes GA, canonical DE,
+  FVRADE, RNEGDE, Neighborhood-SHADE, and DE-NPS-FP implementations together
+  with archived evidence for optimizer benchmarking, held-out controller
+  evaluation, physical-condition sensitivity, and paired objective-term
+  ablation.
 authors:
   - family-names: "Prastiyanto"
     given-names: "Dhidik"
@@ -37,7 +41,9 @@ keywords:
   - adaptive cruise control
   - metaheuristic optimization
   - control systems
-  - safety-critical control
+  - evolutionary optimization
+  - differential evolution
+  - reproducible research
   - benchmarking
   - simulation
 url: "https://github.com/Mousynano/ACC-Optimization"

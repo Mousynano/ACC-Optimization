@@ -1,342 +1,156 @@
-# ACC Evolutionary Benchmark — canonical RQ1–RQ4 scope
+# Evolutionary Optimization for Adaptive Cruise Control
 
-The active study uses the frozen V2.2-FJE training campaign and all 30 controllers per optimizer.
-The primary evidence scope is now frozen to:
+Research software and reproducibility package for a comparative study of evolutionary optimization methods applied to a three-gain Adaptive Cruise Control (ACC) controller.
 
-- **RQ1:** six-optimizer solution quality, variability, convergence, runtime, and actual FE;
-- **RQ2:** all 180 controllers on nominal/synthetic/held-out downstream profiles;
-- **RQ3:** all 180 fixed-gain controllers on the predeclared **12 physical conditions** with matched compensation;
-- **RQ4:** paired canonical-DE re-optimization for `full`, `without_jerk`, `without_energy`, and `tracking_only`.
-
-The following are **not part of the primary study**: sensor noise/bias campaigns, separate sensor sampling, explicit sensor filtering, and actual-versus-nominal compensation mismatch. Equal-FE remains deferred. Custom actuator scenarios remain reporting-only and opt-in through `--actuator-config`; they are not part of the canonical RQ3 evidence.
-
-```bash
-pip install -r requirements.txt
-# RQ1-RQ3 from existing main checkpoints; no main optimization rerun:
-python research_pipeline.py --workers 4
-# RQ1-RQ4. Reuses a compatible completed RQ4 campaign when present:
-python research_pipeline.py --all --workers 4
-# Same orchestration, regression tests first:
-python run_pipeline.py --research-all
-```
-
-`research_outputs/11d1197769c4/` is retained as a **pre-scope-freeze nominal evidence snapshot**. Its RQ1-RQ4 nominal CSV/figures remain scientifically relevant, but its original evaluation contract predates this scope freeze. Run the current pipeline once if a fresh canonical contract/hash is required for final archival submission.
-
-## Frozen training framework V2.2-FJE
-
-Reproducible pipeline for tuning the three-gain constant-time-gap ACC controller
-and benchmarking six evolutionary optimizers against one **frozen FJE cost**.
-
-Framework V2.2-FJE promotes the energy-aware formulation tested in the prior
-ablation branch. The active performance vector is:
+The public release is intentionally organized around **one Python entry point** and **one analysis notebook**:
 
 ```text
-FJE = [
-  cruise speed RMSE,
-  following CTG-spacing RMSE,
-  realized longitudinal jerk RMS,
-  positive tractive-energy intensity (Wh/km)
-]
+main.py          # prepare data, run optimization, regenerate evidence
+analysis.ipynb   # explore the archived RQ1-RQ4 results without rerunning experiments
 ```
 
-The energy term is **wheel-level positive tractive energy**, not fuel consumption
-and not battery consumption. Negative tractive power receives no energy credit.
-The framework adds no post-hoc denoising and no acceleration/jerk output clamp.
+The lower-level implementation remains available in `core/`, `benchmarks/`, `optimizers/`, and `scripts/` for readers who want to inspect or extend the study.
 
-The older three-term FJ framework is retained through
-`experiment_manifest_acc_cost_v2.json`; V2.2-FJE uses a new benchmark namespace
-and a new cost-profile file so stale FJ weights/checkpoints cannot be resumed by
-accident.
+## Fastest way to explore the study
 
-## Quick start
-
-Ubuntu/Linux:
+Install the dependencies:
 
 ```bash
-./bootstrap.sh
+python -m pip install -r requirements.txt
 ```
 
-Manual environment setup:
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-python run_pipeline.py
-```
-
-PowerShell:
-
-```powershell
-py -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-python run_pipeline.py
-```
-
-## What the main pipeline does
-
-`python run_pipeline.py` performs, in order:
-
-1. unit/regression tests;
-2. public trajectory acquisition and deterministic scenario freeze;
-3. calibration preflight;
-4. **4-objective MOPSO** over FJE;
-5. Sahib–Ahmed inverse-mean contribution-weight construction;
-6. 10-trial PSO verification;
-7. freeze of `cost_profile_acc_cost_fje_v2_2.json` against the exact scenario hash;
-8. main preflight;
-9. the six-optimizer, 30-run benchmark.
-
-The main campaign remains 180 jobs:
+Then open:
 
 ```text
-6 algorithms × 30 independent runs × 1 frozen FJE scalar objective
+analysis.ipynb
 ```
 
-Algorithms: GA, DE, FVRADE, RNEGDE, Neighborhood-SHADE, and DE-NPS-FP.
+The notebook reads the archived canonical results from `research_outputs/canonical/`. You do **not** need to rerun the optimization campaign just to inspect the tables and figures reported by the research pipeline.
 
-## Fast smoke test
-
-Before spending serious compute:
+You can also verify that the bundled configuration and canonical evidence are present:
 
 ```bash
-python run_pipeline.py --smoke-test
+python main.py verify
 ```
 
-This uses only development scenarios, tiny MOPSO/PSO budgets, and temporary
-equal FJE weights. It never freezes a research cost profile.
+## Run the optimization yourself
 
-## Stage commands
+The study uses public OpenACC and WLTC trajectories. The raw third-party files are not redistributed in this repository; the preparation command downloads them from their original public sources, preprocesses them deterministically, and verifies the frozen scenario hash.
 
 ```bash
-# Download/preprocess/freeze exact public scenarios only
-python run_pipeline.py --prepare-only
-
-# Prepare + run fresh 4D FJE calibration + freeze cost profile
-python run_pipeline.py --calibrate-only
-
-# Require frozen scenarios/profile, then launch/resume the 180-job benchmark
-python run_pipeline.py --main-only
-
-# Force source refresh
-python run_pipeline.py --force-data --prepare-only
-
-# Force FJE recalibration
-python run_pipeline.py --force-calibration --calibrate-only
+python main.py prepare
+python main.py optimize --workers 4
 ```
 
-Low-level equivalent:
-
-```bash
-python prepare_scenarios_v2.py
-python preflight_v2.py --stage calibration
-python calibrate_cost_fje_v2.py --freeze
-python preflight_v2.py --stage main
-python optimize_parallel.py
-```
-
-## Active experiment contract
-
-The default active manifest is:
+`optimize` runs the frozen benchmark:
 
 ```text
-experiment_manifest_acc_cost_fje_v2_2.json
+6 optimizers × 30 independent runs = 180 optimization jobs
 ```
 
-Core controller/plant contract:
+The six compared methods are:
 
-- gains: `[k_ve, k_de, k_vrel]`;
-- bounds: `[-100, 100]^3`;
-- CTG: `d_safe = 20 + 1.2 * v_ego`;
-- simulation/controller rate: `60 Hz`;
-- vehicle mass: `1500 kg`;
-- air density: `1.225 kg/m³`;
-- drag coefficient: `0.36`;
-- frontal area: `2.42 m²`;
-- rolling resistance: `0.015`;
-- road slope: `0°`;
-- plant force capability: `±6000 N`;
-- nominal range-sensor noise/bias: zero.
+- Genetic Algorithm (GA)
+- Differential Evolution (DE)
+- FVRADE
+- RNEGDE
+- Neighborhood-SHADE
+- DE-NPS-FP
 
-No additional actuator smoothing, acceleration clamp, or jerk clamp is applied.
+Raw run checkpoints are written to `checkpoint_jobs/` and are intentionally excluded from the archival release because they are reproducible runtime artifacts.
 
-## Positive tractive-energy term
+## Regenerate the research evidence
 
-The plant already computes the realized traction force after force saturation.
-For each plant interval the FJE evaluator computes:
-
-```text
-P_tractive = F_traction * max(v_ego, 0)
-P_positive = max(P_tractive, 0)
-E_positive = sum(P_positive * dt)
-f_E        = E_positive / travelled_distance  [Wh/km]
-```
-
-Therefore braking never subtracts from cumulative positive energy. This is an
-energy-demand surrogate at the wheels. Do not interpret it as battery/fuel use
-or regenerative-energy recovery.
-
-For the calibration bank, per-scenario Wh/km values are aggregated with the
-same declared scenario weights used for the tracking/jerk components.
-
-## FJE Pareto calibration
-
-MOPSO constructs a four-dimensional feasible nondominated reference front:
-
-```text
-[f_v, f_d, f_j, f_E]
-```
-
-where:
-
-- `f_v`: cruise set-speed RMSE;
-- `f_d`: following CTG-spacing RMSE;
-- `f_j`: realized ego jerk RMS;
-- `f_E`: positive tractive-energy intensity in Wh/km.
-
-For each dimension, the merged-front mean `mu_i` is converted to a contribution
-weight:
-
-```text
-w_i = (1 / mu_i) / sum_j(1 / mu_j)
-```
-
-The resulting four weights are frozen only after PSO verification. The old
-three-objective FJ profile is never reused because adding energy changes Pareto
-dominance and the scalar landscape.
-
-## Public scenario bank
-
-Scenario semantics are intentionally unchanged from V2.1 so the FJ→FJE change
-is isolated to the performance formulation.
-
-| Role | Source | Rule |
-|---|---|---|
-| calibration | synthetic cruise | deterministic set-speed events |
-| calibration | OpenACC AstaZero | deterministic 90 s leader-kinematic excitation window |
-| calibration | OpenACC Vicolungo | deterministic 90 s leader-kinematic excitation window |
-| held-out | OpenACC Casale | 50–120 s relative to first valid part timestamp |
-| held-out | JRCSTU WLTC Class 3b | full trace |
-
-The processed inputs and exact hashes are recorded in
-`scenario_manifest_acc_cost_v2.json`. The scenario-bank contract remains the V2.1
-bank because its data/window semantics did not change when FJE was promoted.
-
-## Validation plots from a checkpoint
-
-`plot_validation_motion.py` reads `best_solution` from any main checkpoint and
-plots held-out + synthetic motion. It also reports energy, jerk P95/P99, and
-traction/braking reversal diagnostics.
+After a local optimization campaign has finished:
 
 ```bash
-python plot_validation_motion.py checkpoint_jobs/<checkpoint>.pkl
-
-# Synthetic motion diagnostics only
-python plot_validation_motion.py checkpoint_jobs/<checkpoint>.pkl --synthetic-only
+python main.py analyze --workers 4
 ```
 
-Outputs include PNGs, a multi-page PDF, CSV metrics, and JSON provenance.
-
-
-## Comprehensive post-processing / manuscript evidence
-
-The main benchmark now has a reusable post-processing layer inspired by the
-legacy analysis while preserving the active FJE research contract:
+To also run or resume the paired canonical-DE objective-ablation campaign used for RQ4:
 
 ```bash
-python analysis_pipeline.py --clean
+python main.py analyze --with-ablation --workers 4
 ```
 
-It generates `analysis_outputs/` with:
-
-- scalar objective distributions, run stability, gain-boundary audit, and all-run
-  FJE physical-component decomposition;
-- median/IQR convergence;
-- Q-Q + Shapiro-Wilk diagnostics -> independent Kruskal-Wallis / Mann-Whitney
-  comparisons with Holm and Bonferroni correction;
-- comparative trajectory motion for periodic cruise, OpenACC AstaZero/Vicolungo/
-  Casale, WLTC, and sinusoidal following;
-- TTC and explicitly operational/observed TTE diagnostics;
-- rise time, settling time, overshoot, peak time, and steady-state error for all
-  ten cruise set-speed transitions;
-- the inherited 12-case mass/rolling-resistance/road-slope robustness stress test;
-- consistency metadata proving scalar-cost reconstruction from the four weighted
-  FJE components.
-
-`analysis.ipynb` is the manuscript-facing viewer/orchestrator for these outputs.
-The prior minimal FJE notebook is retained as `analysis_minimal_v2_2_fje.ipynb`.
-TTC/TTE, time response, held-out trajectories, and robustness remain validation
-evidence and do not modify the frozen optimization objective.
-
-## Fail-fast checks
+A complete prepare → optimize → analyze workflow is also available:
 
 ```bash
-python preflight_v2.py --stage development
-python preflight_v2.py --stage calibration
-python preflight_v2.py --stage main
+python main.py all --with-ablation --workers 4
 ```
 
-Main preflight verifies that:
+This is computationally expensive. Opening `analysis.ipynb` is the sensible option if the goal is simply to inspect the published evidence rather than donate several CPU-hours to science for sport.
 
-- exact scenario inputs are frozen and hash-valid;
-- the compiled evaluator returns four finite FJE terms;
-- the energy term is positive on the calibration bank;
-- the frozen profile contains exactly four positive weights summing to one;
-- the profile was generated from the exact current scenario hash;
-- referenced Pareto/verification artifacts still exist.
+## Frozen optimization formulation
 
-## Checkpoint isolation
-
-V2.2-FJE uses:
+The decision vector is:
 
 ```text
-benchmark = acc_cost_sahib_fje_v2
-objective = proposed_cost_fje
+[k_ve, k_de, k_vrel]
 ```
 
-so old `acc_cost_sahib_v2` checkpoints cannot masquerade as FJE results. After
-promoting FJE, the main six-optimizer campaign must be rerun under the new
-namespace.
+with bounds `[-100, 100]^3`.
 
-## Repository map
+The frozen FJE performance vector contains:
+
+1. cruise-speed RMSE;
+2. following CTG-spacing RMSE;
+3. realized longitudinal jerk RMS;
+4. positive tractive-energy intensity (Wh/km).
+
+The scalar weights used by the published campaign are stored in `cost_profile_acc_cost_fje_v2_2.json`. The public entry point treats this profile as a **frozen research artifact** rather than silently recalibrating it.
+
+The energy term represents positive wheel-level tractive energy. It is not a fuel-consumption or battery-consumption model, and negative tractive power does not receive energy credit.
+
+## Research scope
+
+The archived evidence is organized around four research questions:
+
+- **RQ1:** solution quality, variability, convergence, runtime, and recorded function evaluations across the six optimizers;
+- **RQ2:** fixed-gain controller behavior on synthetic and held-out driving profiles;
+- **RQ3:** fixed-gain sensitivity across 12 predeclared physical conditions with matched compensation;
+- **RQ4:** paired canonical-DE objective-term ablation for the full, no-jerk, no-energy, and tracking-only formulations.
+
+The active study does not claim sensor-noise robustness, explicit filtering robustness, compensation-parameter mismatch robustness, or equal-function-evaluation comparison.
+
+## Repository layout
 
 ```text
 .
-├── run_pipeline.py
-├── prepare_scenarios_v2.py
-├── preflight_v2.py
-├── calibrate_cost_fje_v2.py
-├── optimize_parallel.py
-├── plot_validation_motion.py
-├── experiment_manifest_acc_cost_fje_v2_2.json   # default active contract
-├── cost_profile_acc_cost_fje_v2_2.json           # generated/frozen by calibration
-├── scenario_manifest_acc_cost_v2.json            # unchanged scenario-bank contract
-├── benchmarks/
-│   ├── acc_cost_fje_v2.py                         # active FJE evaluator
-│   └── acc_cost_v2.py                             # retained historical FJ evaluator
-├── core/
-│   ├── energy.py                                  # readable energy diagnostics
-│   ├── fast_acc_energy.py                         # compiled FJE kernels
-│   ├── physics.py
-│   ├── sensing.py
-│   ├── scenarios_v2.py
-│   └── data_sources_v2.py
-├── optimizers/
-├── tests/
-├── analysis.ipynb
-└── checkpoint_jobs/
+├── main.py                         # public command-line entry point
+├── analysis.ipynb                  # public result walkthrough
+├── README.md
+├── CITATION.cff
+├── LICENSE
+├── requirements.txt
+├── experiment_manifest_acc_cost_fje_v2_2.json
+├── cost_profile_acc_cost_fje_v2_2.json
+├── research_protocol.json
+├── benchmarks/                     # frozen FJE objective
+├── core/                           # ACC simulation, physics, statistics, analysis helpers
+├── optimizers/                     # six compared evolutionary optimizers
+├── scripts/                        # internal workflow modules used by main.py
+├── research_outputs/canonical/     # archived RQ1-RQ4 evidence
+├── research_ablation/              # paired RQ4 run records
+├── data_external/                  # downloaded/preprocessed public trajectories (generated)
+└── tests/                          # lightweight release checks
 ```
 
-## Reproduce the older FJ framework
+## External data
 
-The older three-component framework is still present. Run old-compatible scripts
-under its manifest explicitly:
+The preparation workflow uses public trajectory data from:
 
-```bash
-ACC_MANIFEST=experiment_manifest_acc_cost_v2.json python <script>.py
-```
+- JRC OpenACC AstaZero;
+- JRC OpenACC Vicolungo;
+- JRC OpenACC Casale;
+- JRCSTU WLTC Class 3b.
 
-Do not mix its cost profile/checkpoints with FJE.
+Source URLs, preprocessing rules, selected windows, and SHA-256 hashes are recorded in the generated `scenario_manifest_acc_cost_v2.json`.
+
+## Citation
+
+Citation metadata are provided in `CITATION.cff`. If you use this software or its archived research outputs, cite the corresponding Zenodo software release and, where applicable, the associated research article.
+
+## License
+
+See `LICENSE` for the software license. External datasets retain their original terms and are downloaded from their original sources rather than redistributed here.

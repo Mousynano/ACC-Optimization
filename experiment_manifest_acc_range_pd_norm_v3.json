@@ -1,0 +1,106 @@
+{
+  "experiment_id": "acc_range_pd_norm_v3_evolutionary_2026-09-25",
+  "benchmark": "acc_range_pd_norm_v3",
+  "controller": {
+    "type": "CTG_PD_acceleration_command",
+    "decision_vector": [
+      "k_v",
+      "k_p",
+      "k_d"
+    ],
+    "min_bounds": [
+      -100.0,
+      -100.0,
+      -100.0
+    ],
+    "max_bounds": [
+      100.0,
+      100.0,
+      100.0
+    ],
+    "standstill_distance_m": 20.0,
+    "time_gap_s": 1.2,
+    "speed_reference_m_per_s": 25.0
+  },
+  "sensing": {
+    "architecture": "explicit_range_sensor_boundary",
+    "range_model": "max(min_distance_m, d_true + bias_m + gaussian_noise_m)",
+    "nominal_noise_std_m": 0.0,
+    "nominal_bias_m": 0.0,
+    "nominal_min_distance_m": 0.0,
+    "nominal_noise_seed": 0,
+    "noise_distribution": "deterministic sample-indexed Gaussian when noise_std_m > 0",
+    "relative_velocity": "finite_difference_of_successive_sensed_range",
+    "controller_inputs": [
+      "v_ego",
+      "d_sensed",
+      "v_rel_est"
+    ],
+    "objective_spacing_source": "simulator_ground_truth_separation",
+    "privileged_lead_velocity_or_acceleration": false
+  },
+  "physics": {
+    "nominal_mass_kg": 1500.0,
+    "rolling_resistance": 0.015,
+    "road_slope_deg": 0.0
+  },
+  "optimization": {
+    "algorithms": [
+      "denps"
+    ],
+    "algorithm_display_names": {
+      "denps": "DE-NPS-FP"
+    },
+    "objectives": [
+      "iae"
+    ],
+    "objective_implementation": "standard_normalized_integral_indices",
+    "population_size": 100,
+    "max_iterations": 300,
+    "independent_runs": 1,
+    "total_jobs": 720,
+    "seed_policy": "md5(base_seed:benchmark:run_id), base_seed=20260920",
+    "function_evaluation_count_recorded": true,
+    "de_nps_population_reduction": false,
+    "objective_normalization": {
+      "spacing_error": "(d_actual - d_safe) / 50 m",
+      "spacing_scale_m": 50.0,
+      "spacing_scale_derivation": "d0 + h*v_ref_nom = 20 + 1.2*25",
+      "speed_error": "(v_ref - v_ego) / 25 m/s",
+      "speed_scale_m_per_s": 25.0,
+      "aggregation": "equal sum after nondimensionalization",
+      "continuous_time_approximation": "rectangle rule with dt multiplier",
+      "application_specific_weights_active": false
+    },
+    "base_seed": 20260920
+  },
+  "validation_scope": {
+    "optimization": "controlled nominal lead excitation only",
+    "downstream_not_in_fitness": [
+      "cruise_control_time_response",
+      "car_following_time_response",
+      "time_to_collision",
+      "physical_parameter_robustness",
+      "sensing_diagnostics"
+    ]
+  },
+  "checkpoint_isolation": "checkpoint filenames are prefixed by benchmark key acc_range_pd_norm_v3",
+  "notes": [
+    "The active pipeline contains only GA, DE, FVRADE, RNEGDE, Neighborhood-SHADE, and fixed-population DE-NPS-FP.",
+    "Nominal sensor noise and bias are zero; the sensing boundary supports seeded additive Gaussian range noise for robustness studies.",
+    "DE-NPS-FP disables population reduction; actual objective-evaluation counts are recorded for every run.",
+    "Search bounds are [-100, 100] for k_v, k_p, and k_d in the archived 30-iteration campaign."
+  ],
+  "execution_backend": {
+    "reference": "benchmarks.sisken_prastiyanto.lean_simulate_system",
+    "training": "core.fast_acc.acc_objective_kernel_jit",
+    "compiler": "Numba @njit(cache=True, fastmath=False)",
+    "timestep_parallelism": false,
+    "fitness_memoization": false,
+    "sampling_hz": 60,
+    "horizon_s": 60,
+    "equivalence_tolerance_abs": 1e-12,
+    "equivalence_tolerance_rel": 1e-12,
+    "scope": "compiled sequential objective kernel matched to the readable reference simulator"
+  }
+}

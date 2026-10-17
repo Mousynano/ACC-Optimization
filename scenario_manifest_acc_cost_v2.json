@@ -1,0 +1,240 @@
+{
+  "version": "2.1",
+  "status": "frozen",
+  "sampling_hz": 60,
+  "calibration": {
+    "cruise": [
+      {
+        "id": "C0_CRUISE_STEPS",
+        "type": "cruise_events",
+        "duration_s": 80.0,
+        "initial_ego_speed_mps": 20.0,
+        "events": [
+          [
+            0.0,
+            20.0
+          ],
+          [
+            20.0,
+            25.0
+          ],
+          [
+            40.0,
+            30.0
+          ],
+          [
+            60.0,
+            25.0
+          ]
+        ],
+        "weight": 1.0,
+        "source": "deterministic_synthetic_cruise_profile_v2",
+        "design_rationale": "Repeated 5 m/s set-speed changes within the nominal longitudinal-force envelope; no external controller response used in construction."
+      }
+    ],
+    "following": [
+      {
+        "id": "C1_OPENACC_ASTAZERO",
+        "type": "csv_lead_speed",
+        "path": "data_external/processed/asta_calibration.csv",
+        "time_column": "time_s",
+        "lead_speed_column": "lead_speed_mps",
+        "lead_speed_unit": "m/s",
+        "start_s": 0.0,
+        "end_s": 89.9,
+        "initial_lead_speed_mps": 16.59818181999995,
+        "initial_ego_speed_mps": 16.59818181999995,
+        "initial_gap_m": 39.91781818399994,
+        "weight": 1.0,
+        "resampling": {
+          "target_sampling_hz": 60,
+          "method": "linear_interpolation_of_leader_speed",
+          "note": "OpenACC source is approximately 10 Hz; controller simulation runs on the frozen 60 Hz grid."
+        },
+        "provenance": {
+          "source": "OpenACC AstaZero / ASta_040719_platoon3.csv",
+          "source_url": "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/TransportExpData/JRCDBT0001/LATEST/AstaZero/ASta_040719_platoon3.csv",
+          "raw_path": "data_external/raw/openacc/ASta_040719_platoon3.csv",
+          "raw_sha256": "2c46d20601590be7cfc521c53609e44fb13ba2a25b5cd9a90e864b4bd68577f5",
+          "processed_path": "data_external/processed/asta_calibration.csv",
+          "processed_sha256": "0e09091afa42d2f58bce8bec7a79c05958811538b5b5405f17b53ed33d3d4775",
+          "source_sampling_hz_estimate": 9.999999999997726,
+          "source_window_start_s": 1486.0,
+          "source_window_end_s": 1576.0,
+          "source_speed_column": "Speed1",
+          "selection_rule": "max_leader_kinematic_excitation",
+          "excitation_score": 4.8757463102983705
+        }
+      },
+      {
+        "id": "C2_OPENACC_VICOLUNGO",
+        "type": "csv_lead_speed",
+        "path": "data_external/processed/vicolungo_calibration.csv",
+        "time_column": "time_s",
+        "lead_speed_column": "lead_speed_mps",
+        "lead_speed_unit": "m/s",
+        "start_s": 0.0,
+        "end_s": 90.0,
+        "initial_lead_speed_mps": 32.56868904993433,
+        "initial_ego_speed_mps": 32.56868904993433,
+        "initial_gap_m": 59.08242685992119,
+        "weight": 1.0,
+        "resampling": {
+          "target_sampling_hz": 60,
+          "method": "linear_interpolation_of_leader_speed",
+          "note": "OpenACC source is approximately 10 Hz; controller simulation runs on the frozen 60 Hz grid."
+        },
+        "provenance": {
+          "source": "OpenACC Vicolungo / JRC-VC_280219_part4_highway.csv",
+          "source_url": "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/TransportExpData/JRCDBT0001/LATEST/Vicolungo/JRC-VC_280219_part4_highway.csv",
+          "raw_path": "data_external/raw/openacc/JRC-VC_280219_part4_highway.csv",
+          "raw_sha256": "0debadfcf7829a77909c4c9c899de8417c15880aca029d1d74f24c82a56c72f4",
+          "processed_path": "data_external/processed/vicolungo_calibration.csv",
+          "processed_sha256": "1fc87ec55aaf19d27243c641e3031fc60a8d55665270d598de8ff177b2ce3d00",
+          "source_sampling_hz_estimate": 10.000000002328306,
+          "source_window_start_s": 381225.5,
+          "source_window_end_s": 381315.5,
+          "source_speed_column": "Speed1",
+          "selection_rule": "max_leader_kinematic_excitation",
+          "excitation_score": 6.5801090602626005
+        }
+      }
+    ]
+  },
+  "validation": {
+    "scenarios": [
+      {
+        "id": "V1_CASALE",
+        "type": "csv_lead_speed",
+        "path": "data_external/processed/casale_validation_offset_50_120.csv",
+        "time_column": "time_s",
+        "lead_speed_column": "lead_speed_mps",
+        "lead_speed_unit": "m/s",
+        "start_s": 0.0,
+        "end_s": 69.9,
+        "initial_lead_speed_mps": 35.7693222224725,
+        "initial_ego_speed_mps": 35.7693222224725,
+        "initial_gap_m": 62.923186666967005,
+        "weight": 1.0,
+        "resampling": {
+          "target_sampling_hz": 60,
+          "method": "linear_interpolation_of_leader_speed",
+          "note": "OpenACC source is approximately 10 Hz; controller simulation runs on the frozen 60 Hz grid."
+        },
+        "provenance": {
+          "source": "OpenACC Casale / part6.csv",
+          "source_url": "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/TransportExpData/JRCDBT0001/LATEST/Casale/part6.csv",
+          "raw_path": "data_external/raw/openacc/Casale_part6.csv",
+          "raw_sha256": "cf8d89e97ecf1a062e1fc80167efbcd49f6c36ac50ad03229b80d924368ce219",
+          "processed_path": "data_external/processed/casale_validation_offset_50_120.csv",
+          "processed_sha256": "da989f02f6a002cff526ae067d62b9710152cef097362f259d7c35f8b3190768",
+          "source_sampling_hz_estimate": 10.00000000014552,
+          "source_window_start_s": 56438.0,
+          "source_window_end_s": 56508.0,
+          "source_speed_column": "Speed1",
+          "selection_rule": "fixed_offset_50_120_s",
+          "excitation_score": null
+        },
+        "role": "held_out_empirical_following_validation",
+        "note": "Casale part6 fixed 50-120 s window relative to the first valid timestamp in the part file; excluded from cost calibration."
+      },
+      {
+        "id": "V2_WLTC",
+        "type": "csv_lead_speed",
+        "path": "data_external/processed/wltc_class3b.csv",
+        "time_column": "time_s",
+        "lead_speed_column": "lead_speed_mps",
+        "lead_speed_unit": "m/s",
+        "start_s": 0.0,
+        "end_s": 1800.0,
+        "initial_lead_speed_mps": 0.0,
+        "initial_ego_speed_mps": 0.0,
+        "initial_gap_m": 20.0,
+        "weight": 1.0,
+        "resampling": {
+          "target_sampling_hz": 60,
+          "method": "linear_interpolation_of_leader_speed",
+          "note": "OpenACC source is approximately 10 Hz; controller simulation runs on the frozen 60 Hz grid."
+        },
+        "provenance": {
+          "source": "JRCSTU WLTC Class 3b speed trace",
+          "source_url": "https://raw.githubusercontent.com/JRCSTU/wltp/master/wltp/cycles/V_class3b.txt",
+          "raw_path": "data_external/raw/wltc/V_class3b.txt",
+          "raw_sha256": "3df48abd608c5b01abf5c0d8c64a4e5c030f164b3bd98d4073361b46eb6fef67",
+          "processed_path": "data_external/processed/wltc_class3b.csv",
+          "processed_sha256": "26736adf4efb529baaf2caca133e9a9f1f5abbacaa5b1bfdc2cd63a2dfdf5b63",
+          "source_sampling_hz_estimate": 1.0,
+          "source_window_start_s": 0.0,
+          "source_window_end_s": 1800.0,
+          "source_speed_column": "V_class3b",
+          "selection_rule": "full_cycle",
+          "excitation_score": null
+        },
+        "role": "standardized_out_of_distribution_lead_speed_validation",
+        "note": "Full WLTC Class 3b speed trace; excluded from cost calibration."
+      },
+      {
+        "id": "V3_LEGACY",
+        "type": "synthetic_sinusoidal_lead",
+        "duration_s": 60.0,
+        "initial_ego_speed_mps": 22.0,
+        "initial_lead_speed_mps": 22.0,
+        "initial_gap_m": 60.0,
+        "lead_accel_amplitude_mps2": 1.0,
+        "lead_phase_rate_deg_per_s": 30.0,
+        "role": "backward_regression_only"
+      }
+    ],
+    "policy": "Held-out scenarios never influence Pareto weights after calibration freeze."
+  },
+  "development_only": {
+    "cruise": [
+      {
+        "id": "DEV_C0",
+        "type": "cruise_events",
+        "duration_s": 40.0,
+        "initial_ego_speed_mps": 22.0,
+        "events": [
+          [
+            0.0,
+            25.0
+          ],
+          [
+            10.0,
+            30.0
+          ],
+          [
+            20.0,
+            22.0
+          ],
+          [
+            30.0,
+            25.0
+          ]
+        ],
+        "weight": 1.0,
+        "research_use": false
+      }
+    ],
+    "following": [
+      {
+        "id": "DEV_F0",
+        "type": "synthetic_sinusoidal_lead",
+        "duration_s": 40.0,
+        "initial_ego_speed_mps": 22.0,
+        "initial_lead_speed_mps": 22.0,
+        "initial_gap_m": 60.0,
+        "lead_accel_amplitude_mps2": 1.0,
+        "lead_phase_rate_deg_per_s": 30.0,
+        "weight": 1.0,
+        "research_use": false
+      }
+    ]
+  },
+  "freeze_policy": {
+    "window_selection": "AstaZero/Vicolungo use the predeclared max-leader-kinematic-excitation rule; Casale uses a fixed 50-120 s offset from the first valid timestamp of part6. All rules are independent of controller results.",
+    "data_integrity": "Raw and processed SHA-256 hashes are recorded per scenario.",
+    "resampling": "Lead speed is linearly interpolated from source timestamps to the 60 Hz controller grid.",
+    "change_control": "Changing any calibration source/window requires a new scenario-manifest version and recalibration of the cost profile."
+  }
+}

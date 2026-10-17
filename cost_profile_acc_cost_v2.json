@@ -1,0 +1,11 @@
+{
+  "framework_version": "2.1",
+  "status": "unfrozen_not_calibrated",
+  "weights": null,
+  "performance_vector": ["cruise_speed_rmse", "following_spacing_rmse", "realized_jerk_rms"],
+  "generated_by": null,
+  "scenario_manifest_sha256": null,
+  "reference_front_path": null,
+  "verification_path": null,
+  "note": "run_pipeline.py generates and freezes this profile after the scenario bootstrap. Do not hand-edit weights."
+}

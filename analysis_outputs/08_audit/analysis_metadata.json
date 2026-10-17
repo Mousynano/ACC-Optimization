@@ -1,0 +1,132 @@
+{
+  "benchmark": "acc_cost_sahib_fje_v2",
+  "framework_version": "2.2-FJE",
+  "algorithms": [
+    "ga",
+    "de",
+    "fvrade",
+    "rnegde",
+    "nshade",
+    "denps"
+  ],
+  "independent_runs": 30,
+  "iterations": 30,
+  "population_size": 100,
+  "representative_policy": "observed run nearest algorithm median final fitness",
+  "scenario_manifest": "/mnt/data/current_unzip/ACC-Optimization-SciRep-evolutionary-integrated/scenario_manifest_acc_cost_v2.json",
+  "scenario_manifest_sha256": "646ad8ecd05a9fed0eb280d6a9978de96ced195d16dd609422fa98699c6c5b71",
+  "cost_profile": "/mnt/data/current_unzip/ACC-Optimization-SciRep-evolutionary-integrated/cost_profile_acc_cost_fje_v2_2.json",
+  "cost_profile_status": "frozen",
+  "performance_names": [
+    "cruise_speed_rmse",
+    "following_spacing_rmse",
+    "realized_jerk_rms",
+    "positive_tractive_energy_wh_per_km"
+  ],
+  "weights": {
+    "cruise_speed_rmse": 0.42691677883925433,
+    "following_spacing_rmse": 0.4487713389888883,
+    "realized_jerk_rms": 0.1201532427071723,
+    "positive_tractive_energy_wh_per_km": 0.004158639464684878
+  },
+  "ttc_reporting_threshold_s": 1.5,
+  "observed_tte_definition": {
+    "lead_acceleration_threshold_mps2": 0.25,
+    "minimum_disturbance_duration_s": 0.5,
+    "merge_gap_s": 0.75,
+    "relative_speed_tolerance_mps": 0.2,
+    "spacing_absolute_tolerance_m": 0.75,
+    "spacing_relative_tolerance_fraction": 0.02,
+    "hold_window_s": 2.0,
+    "note": "Operational observed recovery metric for reporting; not Zhuo-Zhu analytical TTE."
+  },
+  "robustness_scenarios": [
+    {
+      "id": "S0",
+      "description": "Nominal",
+      "slope_deg": 0.0,
+      "mass_factor": 1.0,
+      "crr_factor": 1.0
+    },
+    {
+      "id": "S1",
+      "description": "Mass +10%",
+      "slope_deg": 0.0,
+      "mass_factor": 1.1,
+      "crr_factor": 1.0
+    },
+    {
+      "id": "S2",
+      "description": "Mass -10%",
+      "slope_deg": 0.0,
+      "mass_factor": 0.9,
+      "crr_factor": 1.0
+    },
+    {
+      "id": "S3",
+      "description": "Crr +20%",
+      "slope_deg": 0.0,
+      "mass_factor": 1.0,
+      "crr_factor": 1.2
+    },
+    {
+      "id": "S4",
+      "description": "Uphill +10deg",
+      "slope_deg": 10.0,
+      "mass_factor": 1.0,
+      "crr_factor": 1.0
+    },
+    {
+      "id": "S5",
+      "description": "Up + Mass +10%",
+      "slope_deg": 10.0,
+      "mass_factor": 1.1,
+      "crr_factor": 1.0
+    },
+    {
+      "id": "S6",
+      "description": "Up + Mass -10%",
+      "slope_deg": 10.0,
+      "mass_factor": 0.9,
+      "crr_factor": 1.0
+    },
+    {
+      "id": "S7",
+      "description": "Up + Crr +20%",
+      "slope_deg": 10.0,
+      "mass_factor": 1.0,
+      "crr_factor": 1.2
+    },
+    {
+      "id": "S8",
+      "description": "Downhill -10deg",
+      "slope_deg": -10.0,
+      "mass_factor": 1.0,
+      "crr_factor": 1.0
+    },
+    {
+      "id": "S9",
+      "description": "Down + Mass +10%",
+      "slope_deg": -10.0,
+      "mass_factor": 1.1,
+      "crr_factor": 1.0
+    },
+    {
+      "id": "S10",
+      "description": "Down + Mass -10%",
+      "slope_deg": -10.0,
+      "mass_factor": 0.9,
+      "crr_factor": 1.0
+    },
+    {
+      "id": "S11",
+      "description": "Down + Crr +20%",
+      "slope_deg": -10.0,
+      "mass_factor": 1.0,
+      "crr_factor": 1.2
+    }
+  ],
+  "sensor_robustness": "not executed: active research manifest defines nominal sensing only and no preregistered perturbation grid",
+  "max_cost_reconstruction_abs_error": 2.220446049250313e-16,
+  "issue_count": 0
+}

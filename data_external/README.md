@@ -1,6 +1,6 @@
 # External trajectory cache
 
-This directory is populated by `prepare_scenarios_v2.py`.
+This directory is populated by `python main.py prepare`.
 
 - `raw/` contains public third-party source files downloaded from JRC/OpenACC and JRCSTU.
 - `processed/` contains compact project-local leader-speed traces.

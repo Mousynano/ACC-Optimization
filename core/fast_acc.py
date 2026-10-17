@@ -2,11 +2,9 @@
 
 IMPORTANT RESEARCH DESIGN NOTE
 ------------------------------
-This module is an execution backend only.  The readable/reference scientific
-implementation remains ``benchmarks.sisken_prastiyanto.lean_simulate_system``.
-The functions below mirror the same equations and state-update order so the
-optimizer can evaluate candidates without paying Python interpreter overhead at
-every 60 Hz simulation step.
+This module is an execution backend only. The active public objective is defined
+in ``benchmarks.acc_cost_fje_v2`` and uses these kernels to evaluate candidates
+without paying Python interpreter overhead at every 60 Hz simulation step.
 
 Only the P0 numerical hot path is JIT-compiled here.  Optimizer internals,
 checkpointing, progress reporting, statistics, and post-processing are left

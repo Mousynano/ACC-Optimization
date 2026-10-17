@@ -144,7 +144,7 @@ def _load_csv_following(entry: dict, sampling_hz: int) -> FollowingScenario:
         if actual_sha != expected_sha:
             raise RuntimeError(
                 f"{source}: SHA-256 mismatch. Expected {expected_sha}, got {actual_sha}. "
-                "Re-run prepare_scenarios_v2.py instead of using silently changed trajectory data."
+                "Run `python main.py prepare` instead of using silently changed trajectory data."
             )
 
     resampling = entry.get("resampling", {})

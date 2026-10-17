@@ -12,3 +12,13 @@ data_external/processed/
 
 # Generated research archives
 research_outputs/*.zip
+
+# Regenerable research-evaluation caches
+research_outputs/*/*/cache/
+research_outputs/*/*/telemetry/
+
+# Local optimizer checkpoints
+checkpoint_jobs/
+
+# Runtime logs
+*.log
